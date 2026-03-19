@@ -1,0 +1,22 @@
+{
+  "name": "synthesis-memory-lending",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "publish-fragment": "npx tsx scripts/publish-fragment.ts",
+    "borrow-fragment": "npx tsx scripts/borrow-fragment.ts",
+    "give-feedback": "npx tsx scripts/give-feedback.ts",
+    "evaluate": "npx tsx scripts/evaluate.ts",
+    "serve": "npx tsx scripts/serve-fragments.ts"
+  },
+  "dependencies": {
+    "viem": "^2.21.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}
