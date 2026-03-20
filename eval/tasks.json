@@ -1,0 +1,17 @@
+[
+  {
+    "id": "tilapia-disease-surveillance",
+    "prompt": "Identify the three highest-priority disease surveillance investments for small-scale tilapia farmers in sub-Saharan Africa, considering pathogen diversity and diagnostic infrastructure gaps.",
+    "domain": "aquaculture"
+  },
+  {
+    "id": "fcr-literature-review",
+    "prompt": "Compare feed conversion ratio measurement methodologies across Norwegian and Chilean salmon aquaculture research. What normalization is required for cross-study comparison?",
+    "domain": "aquaculture"
+  },
+  {
+    "id": "carp-breeding-priorities",
+    "prompt": "What are the most impactful genomic selection targets for disease resistance in Indian major carps (rohu, catla, mrigal), given current breeding program limitations?",
+    "domain": "aquaculture"
+  }
+]
