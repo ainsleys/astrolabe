@@ -3,11 +3,33 @@ pragma solidity ^0.8.24;
 
 import "forge-std/Test.sol";
 import "../src/MemoryLending.sol";
+import "../src/interfaces/IIdentityRegistry.sol";
+
+/// @dev Mock identity registry that maps agentId → owner
+contract MockIdentityRegistry is IIdentityRegistry {
+    mapping(uint256 => address) public owners;
+
+    function setOwner(uint256 agentId, address owner) external {
+        owners[agentId] = owner;
+    }
+
+    function ownerOf(uint256 agentId) external view override returns (address) {
+        address owner = owners[agentId];
+        require(owner != address(0), "Agent not registered");
+        return owner;
+    }
+
+    function agentURI(uint256) external pure override returns (string memory) {
+        return "";
+    }
+}
 
 contract MemoryLendingTest is Test {
     MemoryLending lending;
+    MockIdentityRegistry registry;
     address contributor = makeAddr("contributor");
     address borrower = makeAddr("borrower");
+    address attacker = makeAddr("attacker");
     uint256 contributorAgentId = 1;
     uint256 borrowerAgentId = 2;
     bytes32 contentHash = keccak256("test content");
@@ -16,9 +38,15 @@ contract MemoryLendingTest is Test {
     uint256 price = 0.001 ether;
 
     function setUp() public {
-        lending = new MemoryLending();
+        registry = new MockIdentityRegistry();
+        registry.setOwner(contributorAgentId, contributor);
+        registry.setOwner(borrowerAgentId, borrower);
+
+        lending = new MemoryLending(IIdentityRegistry(address(registry)));
+
         vm.deal(contributor, 10 ether);
         vm.deal(borrower, 10 ether);
+        vm.deal(attacker, 10 ether);
     }
 
     function test_publishFragment() public {
@@ -47,6 +75,14 @@ contract MemoryLendingTest is Test {
         );
     }
 
+    function test_publishRevertsSpoofedAgentId() public {
+        vm.prank(attacker);
+        vm.expectRevert("Caller does not own contributor agent ID");
+        lending.publishFragment(
+            contributorAgentId, contentHash, contentURI, domain, price
+        );
+    }
+
     function test_borrowFragment() public {
         vm.prank(contributor);
         lending.publishFragment(
@@ -63,6 +99,17 @@ contract MemoryLendingTest is Test {
         lending.borrowFragment{value: price}(0, borrowerAgentId);
 
         assertEq(contributor.balance, contributorBefore + price);
+    }
+
+    function test_borrowRevertsSpoofedAgentId() public {
+        vm.prank(contributor);
+        lending.publishFragment(
+            contributorAgentId, contentHash, contentURI, domain, price
+        );
+
+        vm.prank(attacker);
+        vm.expectRevert("Caller does not own borrower agent ID");
+        lending.borrowFragment{value: price}(0, borrowerAgentId);
     }
 
     function test_borrowRevertsInsufficientPayment() public {

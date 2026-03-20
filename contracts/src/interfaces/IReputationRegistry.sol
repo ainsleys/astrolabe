@@ -3,11 +3,14 @@ pragma solidity ^0.8.24;
 
 /// @notice Minimal ERC-8004 Reputation Registry interface
 interface IReputationRegistry {
-    function submitFeedback(
-        uint256 subjectAgentId,
-        uint256 reviewerAgentId,
-        string calldata tag,
-        uint8 score,
-        string calldata comment
+    function giveFeedback(
+        uint256 agentId,
+        uint256 value,
+        uint256 valueDecimals,
+        string calldata tag1,
+        string calldata tag2,
+        string calldata endpoint,
+        string calldata feedbackURI,
+        bytes32 feedbackHash
     ) external;
 }

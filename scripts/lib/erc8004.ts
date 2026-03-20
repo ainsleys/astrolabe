@@ -28,21 +28,33 @@ export async function isAgentRegistered(
 }
 
 /// Submit feedback to the ERC-8004 Reputation Registry
-export async function submitFeedback(
+/// Score is 1-10, stored as value with 0 decimals.
+/// tag1 = "memory-lend", tag2 = domain tag (e.g. "aquaculture").
+export async function giveFeedback(
   walletClient: WalletClient,
-  subjectAgentId: bigint,
-  reviewerAgentId: bigint,
-  tag: string,
+  agentId: bigint,
   score: number,
-  comment: string
+  tag1: string,
+  tag2: string,
+  feedbackURI: string,
+  feedbackHash: `0x${string}`
 ): Promise<`0x${string}`> {
   if (!walletClient.account) throw new Error("Wallet has no account");
 
   const hash = await walletClient.writeContract({
     address: config.reputationRegistry,
     abi: REPUTATION_REGISTRY_ABI,
-    functionName: "submitFeedback",
-    args: [subjectAgentId, reviewerAgentId, tag, score, comment],
+    functionName: "giveFeedback",
+    args: [
+      agentId,
+      BigInt(score),
+      0n, // valueDecimals
+      tag1,
+      tag2,
+      "", // endpoint — unused for now
+      feedbackURI,
+      feedbackHash,
+    ],
     account: walletClient.account,
     chain: walletClient.chain,
   });

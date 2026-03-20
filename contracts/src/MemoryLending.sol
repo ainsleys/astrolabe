@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import "./interfaces/IIdentityRegistry.sol";
+
 /// @title MemoryLending
 /// @notice Publish and borrow memory fragments with on-chain receipts.
 ///         ERC-8004 agent IDs are first-class in every receipt.
 contract MemoryLending {
+    IIdentityRegistry public immutable identityRegistry;
+
+    constructor(IIdentityRegistry _identityRegistry) {
+        identityRegistry = _identityRegistry;
+    }
+
     struct Fragment {
         uint256 contributorAgentId;
         address contributor;
@@ -44,6 +52,10 @@ contract MemoryLending {
         string calldata domain,
         uint256 priceWei
     ) external returns (uint256 fragmentId) {
+        require(
+            identityRegistry.ownerOf(contributorAgentId) == msg.sender,
+            "Caller does not own contributor agent ID"
+        );
         fragmentId = nextFragmentId++;
         fragments[fragmentId] = Fragment({
             contributorAgentId: contributorAgentId,
@@ -71,6 +83,10 @@ contract MemoryLending {
         uint256 fragmentId,
         uint256 borrowerAgentId
     ) external payable {
+        require(
+            identityRegistry.ownerOf(borrowerAgentId) == msg.sender,
+            "Caller does not own borrower agent ID"
+        );
         Fragment storage f = fragments[fragmentId];
         require(f.active, "Fragment not active");
         require(msg.value >= f.priceWei, "Insufficient payment");

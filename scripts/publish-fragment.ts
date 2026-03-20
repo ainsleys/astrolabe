@@ -1,7 +1,12 @@
 import { keccak256, toHex, parseEther } from "viem";
 import { config, MEMORY_LENDING_ABI } from "./lib/config.js";
 import { getPublicClient, getContributorWallet } from "./lib/wallet.js";
-import { readFileSync } from "fs";
+import { readFileSync, copyFileSync, existsSync } from "fs";
+import { resolve, basename, dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const FRAGMENTS_DIR = resolve(join(__dirname, "..", "fragments"));
 
 async function main() {
   const contentPath = process.argv[2];
@@ -13,9 +18,20 @@ async function main() {
     process.exit(1);
   }
 
-  const content = readFileSync(contentPath, "utf-8");
+  const resolvedPath = resolve(contentPath);
+  const fileName = basename(resolvedPath);
+  const fragmentsPath = join(FRAGMENTS_DIR, fileName);
+
+  // Ensure the file is in fragments/ so the serve endpoint can find it
+  if (resolve(fragmentsPath) !== resolvedPath) {
+    console.log(`  Copying ${resolvedPath} → ${fragmentsPath}`);
+    copyFileSync(resolvedPath, fragmentsPath);
+  }
+
+  // Hash from fragments/ copy — this is what the server will serve
+  const content = readFileSync(fragmentsPath, "utf-8");
   const contentHash = keccak256(toHex(content));
-  const contentURI = `http://localhost:${config.fragmentServerPort}/${contentPath.split("/").pop()}`;
+  const contentURI = `http://localhost:${config.fragmentServerPort}/${fileName}`;
   const priceWei = parseEther(priceEth);
 
   console.log("Publishing fragment...");

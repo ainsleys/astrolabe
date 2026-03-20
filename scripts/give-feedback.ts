@@ -1,13 +1,15 @@
+import { keccak256, toHex } from "viem";
 import { config } from "./lib/config.js";
 import { getPublicClient, getBorrowerWallet } from "./lib/wallet.js";
-import { submitFeedback } from "./lib/erc8004.js";
+import { giveFeedback } from "./lib/erc8004.js";
 
 async function main() {
   const scoreStr = process.argv[2];
-  const comment = process.argv[3] || "";
+  const domain = process.argv[3] || "aquaculture";
+  const comment = process.argv[4] || "";
 
   if (!scoreStr) {
-    console.error("Usage: give-feedback <score-1-to-10> [comment]");
+    console.error("Usage: give-feedback <score-1-to-10> [domain] [comment]");
     process.exit(1);
   }
 
@@ -20,20 +22,28 @@ async function main() {
   const publicClient = getPublicClient();
   const wallet = getBorrowerWallet();
 
+  // feedbackURI/hash are empty for now — could point to eval results
+  const feedbackURI = "";
+  const feedbackHash =
+    comment
+      ? keccak256(toHex(comment))
+      : ("0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`);
+
   console.log("Submitting feedback to ERC-8004 Reputation Registry...");
   console.log(`  Subject (contributor) agent ID: ${config.contributorAgentId}`);
-  console.log(`  Reviewer (borrower) agent ID: ${config.borrowerAgentId}`);
-  console.log(`  Tag: memory-lend`);
+  console.log(`  Tag1: memory-lend`);
+  console.log(`  Tag2: ${domain}`);
   console.log(`  Score: ${score}`);
   console.log(`  Comment: ${comment || "(none)"}`);
 
-  const hash = await submitFeedback(
+  const hash = await giveFeedback(
     wallet,
     config.contributorAgentId,
-    config.borrowerAgentId,
-    "memory-lend",
     score,
-    comment
+    "memory-lend",
+    domain,
+    feedbackURI,
+    feedbackHash
   );
 
   console.log(`  Tx: ${hash}`);
