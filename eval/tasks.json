@@ -13,5 +13,20 @@
     "id": "carp-breeding-priorities",
     "prompt": "What are the most impactful genomic selection targets for disease resistance in Indian major carps (rohu, catla, mrigal), given current breeding program limitations?",
     "domain": "aquaculture"
+  },
+  {
+    "id": "saas-launch-checklist",
+    "prompt": "You are building a WhatsApp-based B2B messaging product for small business owners. Create a production launch checklist covering the critical items that must be in place before going live, focusing on observability, API integration pitfalls, and common failure modes.",
+    "domain": "saas-engineering"
+  },
+  {
+    "id": "whatsapp-bot-debugging",
+    "prompt": "A WhatsApp Business API bot is in testing. Users report increased spam on their phones, and some outbound messages are not being delivered. Walk through the debugging process, distinguishing between platform-level issues and application bugs.",
+    "domain": "saas-engineering"
+  },
+  {
+    "id": "service-integration-verification",
+    "prompt": "A product has optional third-party service integrations (OCR, payment processing) that are conditionally enabled via environment variables. A developer claims a service is 'not connected' based on reading the codebase. What verification steps should be taken before making claims about production service state?",
+    "domain": "saas-engineering"
   }
 ]

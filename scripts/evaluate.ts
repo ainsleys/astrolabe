@@ -2,7 +2,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { keccak256, toHex } from "viem";
 import { config } from "./lib/config.js";
+import { getBorrowerWallet, getPublicClient } from "./lib/wallet.js";
+import { giveFeedback } from "./lib/erc8004.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -304,6 +307,65 @@ async function main() {
         ? "No measurable difference."
         : "Baseline outperformed augmented — check fragment quality."
   );
+
+  // --- Submit reputation feedback on-chain if --feedback flag is set ---
+  const submitOnChain = process.argv.includes("--feedback");
+  if (submitOnChain && config.contributorAgentId && config.borrowerAgentId) {
+    console.log("\n=== SUBMITTING ON-CHAIN FEEDBACK ===");
+
+    // Score: map delta to 1-10 scale (0 delta = 5, +3 delta = 8, -3 delta = 2, clamped)
+    const rawScore = Math.round(5 + avgDelta);
+    const clampedScore = Math.max(1, Math.min(10, rawScore));
+
+    // Build feedback evidence from results
+    const evidence = JSON.stringify({
+      tasksEvaluated: results.length,
+      avgBaselineScore: avgBaseline,
+      avgAugmentedScore: avgAugmented,
+      avgDelta,
+      perTask: results.map((r) => ({
+        id: r.taskId,
+        baselineAvg: avg(r.baselineScores),
+        augmentedAvg: avg(r.augmentedScores),
+      })),
+    });
+    const evidenceHash = keccak256(toHex(evidence)) as `0x${string}`;
+
+    // Save evidence file
+    const evidencePath = join(RESULTS_DIR, "feedback-evidence.json");
+    writeFileSync(evidencePath, evidence);
+
+    // Determine domain from first task
+    const domain = results[0]?.taskId.split("-")[0] || "unknown";
+
+    console.log(`  Score: ${clampedScore}/10 (delta: ${avgDelta > 0 ? "+" : ""}${avgDelta.toFixed(1)})`);
+    console.log(`  Contributor agent: ${config.contributorAgentId}`);
+    console.log(`  Domain: ${domain}`);
+
+    try {
+      const wallet = getBorrowerWallet();
+      const publicClient = getPublicClient();
+
+      const hash = await giveFeedback(
+        wallet,
+        config.contributorAgentId,
+        clampedScore,
+        "memory-lend",
+        domain,
+        "", // feedbackURI — could point to hosted evidence
+        evidenceHash
+      );
+
+      console.log(`  Tx: ${hash}`);
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log(`  Block: ${receipt.blockNumber}`);
+      console.log("  Reputation feedback submitted.");
+    } catch (err) {
+      console.error("  Failed to submit on-chain feedback:", err);
+    }
+  } else if (submitOnChain) {
+    console.log("\nSkipping on-chain feedback — agent IDs not configured.");
+  }
 }
 
 main().catch((err) => {
