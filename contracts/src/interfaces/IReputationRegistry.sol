@@ -5,8 +5,8 @@ pragma solidity ^0.8.24;
 interface IReputationRegistry {
     function giveFeedback(
         uint256 agentId,
-        uint256 value,
-        uint256 valueDecimals,
+        int128 value,
+        uint8 valueDecimals,
         string calldata tag1,
         string calldata tag2,
         string calldata endpoint,

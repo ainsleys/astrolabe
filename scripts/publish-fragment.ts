@@ -19,19 +19,24 @@ async function main() {
   }
 
   const resolvedPath = resolve(contentPath);
-  const fileName = basename(resolvedPath);
-  const fragmentsPath = join(FRAGMENTS_DIR, fileName);
+  const content = readFileSync(resolvedPath, "utf-8");
+  const contentHash = keccak256(toHex(content));
 
-  // Ensure the file is in fragments/ so the serve endpoint can find it
-  if (resolve(fragmentsPath) !== resolvedPath) {
+  // Use hash prefix in filename to avoid basename collisions between publishes
+  const hashPrefix = contentHash.slice(2, 10);
+  const origName = basename(resolvedPath);
+  const ext = origName.includes(".") ? origName.slice(origName.lastIndexOf(".")) : "";
+  const stem = origName.includes(".") ? origName.slice(0, origName.lastIndexOf(".")) : origName;
+  const servedName = `${stem}-${hashPrefix}${ext}`;
+  const fragmentsPath = join(FRAGMENTS_DIR, servedName);
+
+  // Copy into fragments/ — content-addressed name means no overwrites
+  if (!existsSync(fragmentsPath)) {
     console.log(`  Copying ${resolvedPath} → ${fragmentsPath}`);
     copyFileSync(resolvedPath, fragmentsPath);
   }
 
-  // Hash from fragments/ copy — this is what the server will serve
-  const content = readFileSync(fragmentsPath, "utf-8");
-  const contentHash = keccak256(toHex(content));
-  const contentURI = `http://localhost:${config.fragmentServerPort}/${fileName}`;
+  const contentURI = `http://localhost:${config.fragmentServerPort}/${servedName}`;
   const priceWei = parseEther(priceEth);
 
   console.log("Publishing fragment...");

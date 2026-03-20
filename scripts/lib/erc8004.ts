@@ -47,8 +47,8 @@ export async function giveFeedback(
     functionName: "giveFeedback",
     args: [
       agentId,
-      BigInt(score),
-      0n, // valueDecimals
+      BigInt(score), // int128
+      0,             // uint8 valueDecimals
       tag1,
       tag2,
       "", // endpoint — unused for now

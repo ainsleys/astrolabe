@@ -122,8 +122,8 @@ export const REPUTATION_REGISTRY_ABI = [
     name: "giveFeedback",
     inputs: [
       { name: "agentId", type: "uint256" },
-      { name: "value", type: "uint256" },
-      { name: "valueDecimals", type: "uint256" },
+      { name: "value", type: "int128" },
+      { name: "valueDecimals", type: "uint8" },
       { name: "tag1", type: "string" },
       { name: "tag2", type: "string" },
       { name: "endpoint", type: "string" },
