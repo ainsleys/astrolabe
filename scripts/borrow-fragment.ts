@@ -1,6 +1,12 @@
 import { keccak256, toHex, formatEther } from "viem";
+import { writeFileSync, mkdirSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import { config, MEMORY_LENDING_ABI } from "./lib/config.js";
 import { getPublicClient, getBorrowerWallet } from "./lib/wallet.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BORROWS_DIR = join(__dirname, "..", "borrows");
 
 async function main() {
   const fragmentIdStr = process.argv[2];
@@ -72,11 +78,27 @@ async function main() {
   console.log(`  Block: ${receipt.blockNumber}`);
   console.log(`  Borrower agent ID: ${config.borrowerAgentId}`);
   console.log(`  Contributor agent ID: ${fragment.contributorAgentId}`);
-  console.log("Done. Fragment borrowed successfully.");
 
-  // Output content to stdout for piping
-  console.log("\n--- FRAGMENT CONTENT ---");
-  console.log(content);
+  // Step 5: Save borrow receipt
+  mkdirSync(BORROWS_DIR, { recursive: true });
+
+  const borrowReceipt = {
+    fragmentId: fragmentId.toString(),
+    domain: fragment.domain,
+    contentHash: fragment.contentHash,
+    contentURI: fragment.contentURI,
+    contributorAgentId: fragment.contributorAgentId.toString(),
+    borrowerAgentId: config.borrowerAgentId.toString(),
+    priceWei: fragment.priceWei.toString(),
+    borrowTxHash: hash,
+    blockNumber: receipt.blockNumber.toString(),
+    content,
+  };
+
+  const receiptPath = join(BORROWS_DIR, `fragment-${fragmentId}.json`);
+  writeFileSync(receiptPath, JSON.stringify(borrowReceipt, null, 2));
+  console.log(`  Receipt saved: ${receiptPath}`);
+  console.log("Done. Fragment borrowed successfully.");
 }
 
 main().catch((err) => {

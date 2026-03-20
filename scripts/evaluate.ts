@@ -1,5 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  readdirSync,
+  existsSync,
+} from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { keccak256, toHex } from "viem";
@@ -32,6 +38,7 @@ interface JudgeResult {
 
 interface EvalResult {
   taskId: string;
+  domain: string;
   prompt: string;
   baselineResponse: string;
   augmentedResponse: string;
@@ -39,6 +46,21 @@ interface EvalResult {
   judgeResult: JudgeResult;
   baselineScores: JudgeScores;
   augmentedScores: JudgeScores;
+  source: "borrow" | "local";
+  contentHashes: string[];
+}
+
+interface BorrowReceipt {
+  fragmentId: string;
+  domain: string;
+  contentHash: string;
+  contentURI: string;
+  contributorAgentId: string;
+  borrowerAgentId: string;
+  priceWei: string;
+  borrowTxHash: string;
+  blockNumber: string;
+  content: string;
 }
 
 // --- Config ---
@@ -46,33 +68,75 @@ interface EvalResult {
 const TASKS_PATH = join(__dirname, "..", "eval", "tasks.json");
 const RESULTS_DIR = join(__dirname, "..", "eval", "results");
 const FRAGMENTS_DIR = join(__dirname, "..", "fragments");
+const BORROWS_DIR = join(__dirname, "..", "borrows");
 
 const MODEL = "claude-sonnet-4-20250514";
 const JUDGE_MODEL = "claude-sonnet-4-20250514";
 const MAX_JUDGE_RETRIES = 3;
 
-// --- Helpers ---
+// --- Fragment loading ---
 
-function loadTasks(): Task[] {
-  return JSON.parse(readFileSync(TASKS_PATH, "utf-8"));
+function loadBorrowReceipts(domain: string): BorrowReceipt[] {
+  if (!existsSync(BORROWS_DIR)) return [];
+  return readdirSync(BORROWS_DIR)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => JSON.parse(readFileSync(join(BORROWS_DIR, f), "utf-8")) as BorrowReceipt)
+    .filter((r) => r.domain === domain);
 }
 
-function loadFragment(domain: string): string | null {
-  // Look for any .md file in fragments/ matching the domain
-  const { readdirSync } = require("fs");
+function loadLocalFragments(domain: string): { content: string; hashes: string[] } | null {
   try {
-    const files: string[] = readdirSync(FRAGMENTS_DIR);
-    const match = files.find(
-      (f: string) => f.endsWith(".md") && f.includes(domain)
+    const allFiles = readdirSync(FRAGMENTS_DIR).filter(
+      (f) => f.endsWith(".md") && f !== ".gitkeep"
     );
-    if (match) {
-      return readFileSync(join(FRAGMENTS_DIR, match), "utf-8");
-    }
+    const matched = allFiles.filter((f) => {
+      const content = readFileSync(join(FRAGMENTS_DIR, f), "utf-8");
+      const domainMatch = content.match(/^domain:\s*(.+)$/m);
+      if (domainMatch && domainMatch[1].trim() === domain) return true;
+      return f.includes(domain);
+    });
+    if (matched.length === 0) return null;
+    const contents = matched.map((f) =>
+      readFileSync(join(FRAGMENTS_DIR, f), "utf-8")
+    );
+    return {
+      content: contents.join("\n\n---\n\n"),
+      hashes: contents.map((c) => keccak256(toHex(c))),
+    };
   } catch {
-    // fragments dir may not exist yet
+    return null;
   }
+}
+
+type FragmentSource = {
+  content: string;
+  hashes: string[];
+  source: "borrow" | "local";
+  contributorAgentId?: string;
+};
+
+function loadFragmentsForDomain(domain: string): FragmentSource | null {
+  // Prefer borrow receipts — these are on-chain-verified
+  const receipts = loadBorrowReceipts(domain);
+  if (receipts.length > 0) {
+    return {
+      content: receipts.map((r) => r.content).join("\n\n---\n\n"),
+      hashes: receipts.map((r) => r.contentHash),
+      source: "borrow",
+      contributorAgentId: receipts[0].contributorAgentId,
+    };
+  }
+
+  // Fall back to local fragments
+  const local = loadLocalFragments(domain);
+  if (local) {
+    return { ...local, source: "local" };
+  }
+
   return null;
 }
+
+// --- LLM calls ---
 
 async function callClaude(
   client: Anthropic,
@@ -139,13 +203,11 @@ Respond with ONLY this JSON:
       response.content.find((b) => b.type === "text")?.text || "";
 
     try {
-      // Extract JSON from response (may have markdown fences)
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("No JSON found");
 
       const parsed = JSON.parse(jsonMatch[0]) as JudgeResult;
 
-      // Validate structure
       if (
         !parsed.response_1 ||
         !parsed.response_2 ||
@@ -154,7 +216,11 @@ Respond with ONLY this JSON:
       ) {
         throw new Error("Missing fields");
       }
-      for (const key of ["accuracy", "specificity", "actionability"] as const) {
+      for (const key of [
+        "accuracy",
+        "specificity",
+        "actionability",
+      ] as const) {
         if (
           typeof parsed.response_1[key] !== "number" ||
           typeof parsed.response_2[key] !== "number"
@@ -188,6 +254,7 @@ async function main() {
 
   const client = new Anthropic({ apiKey: config.anthropicApiKey });
   const tasks = loadTasks();
+  const submitOnChain = process.argv.includes("--feedback");
 
   console.log(`Loaded ${tasks.length} evaluation tasks\n`);
 
@@ -195,17 +262,29 @@ async function main() {
 
   const results: EvalResult[] = [];
 
+  // Group tasks by domain to load fragments once per domain
+  const domainFragments = new Map<string, FragmentSource | null>();
+
+  for (const task of tasks) {
+    if (!domainFragments.has(task.domain)) {
+      domainFragments.set(task.domain, loadFragmentsForDomain(task.domain));
+    }
+  }
+
   for (const task of tasks) {
     console.log(`=== Task: ${task.id} ===`);
     console.log(`  Domain: ${task.domain}`);
 
-    // Load fragment for this domain
-    const fragment = loadFragment(task.domain);
-    if (!fragment) {
-      console.warn(`  No fragment found for domain "${task.domain}", skipping`);
+    const frag = domainFragments.get(task.domain);
+    if (!frag) {
+      console.warn(
+        `  No fragment found for domain "${task.domain}", skipping`
+      );
       continue;
     }
-    console.log(`  Fragment loaded (${fragment.length} chars)`);
+    console.log(
+      `  Fragment loaded (${frag.content.length} chars, source: ${frag.source})`
+    );
 
     // Generate baseline response (no fragment)
     console.log("  Generating baseline response...");
@@ -213,7 +292,7 @@ async function main() {
 
     // Generate augmented response (with fragment as system context)
     console.log("  Generating augmented response...");
-    const augmentedSystemPrompt = `You have access to the following domain expertise. Use it to inform your response.\n\n---\n${fragment}\n---`;
+    const augmentedSystemPrompt = `You have access to the following domain expertise. Use it to inform your response.\n\n---\n${frag.content}\n---`;
     const augmentedResponse = await callClaude(
       client,
       augmentedSystemPrompt,
@@ -221,7 +300,9 @@ async function main() {
     );
 
     // Randomize order for judge
-    const augmentedIsResponse = Math.random() < 0.5 ? "1" : "2" as "1" | "2";
+    const augmentedIsResponse = (
+      Math.random() < 0.5 ? "1" : "2"
+    ) as "1" | "2";
     const [resp1, resp2] =
       augmentedIsResponse === "1"
         ? [augmentedResponse, baselineResponse]
@@ -243,6 +324,7 @@ async function main() {
 
     const result: EvalResult = {
       taskId: task.id,
+      domain: task.domain,
       prompt: task.prompt,
       baselineResponse,
       augmentedResponse,
@@ -250,6 +332,8 @@ async function main() {
       judgeResult,
       baselineScores,
       augmentedScores,
+      source: frag.source,
+      contentHashes: frag.hashes,
     };
 
     results.push(result);
@@ -277,95 +361,132 @@ async function main() {
   console.log("=== SUMMARY ===");
   console.log(`Tasks evaluated: ${results.length}\n`);
 
+  // Group by domain for per-domain summary and feedback
+  const domains = [...new Set(results.map((r) => r.domain))];
+
   let totalBaselineAvg = 0;
   let totalAugmentedAvg = 0;
 
-  for (const r of results) {
-    const bAvg = avg(r.baselineScores);
-    const aAvg = avg(r.augmentedScores);
-    const delta = aAvg - bAvg;
-    totalBaselineAvg += bAvg;
-    totalAugmentedAvg += aAvg;
+  for (const domain of domains) {
+    const domainResults = results.filter((r) => r.domain === domain);
+    const frag = domainFragments.get(domain)!;
+
+    let domBaselineSum = 0;
+    let domAugmentedSum = 0;
+
+    console.log(`  --- ${domain} (source: ${frag.source}) ---`);
+    for (const r of domainResults) {
+      const bAvg = avg(r.baselineScores);
+      const aAvg = avg(r.augmentedScores);
+      domBaselineSum += bAvg;
+      domAugmentedSum += aAvg;
+      totalBaselineAvg += bAvg;
+      totalAugmentedAvg += aAvg;
+      console.log(
+        `    ${r.taskId}: baseline=${bAvg.toFixed(1)} augmented=${aAvg.toFixed(1)} delta=${(aAvg - bAvg) > 0 ? "+" : ""}${(aAvg - bAvg).toFixed(1)}`
+      );
+    }
+
+    const domAvgBaseline = domBaselineSum / domainResults.length;
+    const domAvgAugmented = domAugmentedSum / domainResults.length;
+    const domDelta = domAvgAugmented - domAvgBaseline;
     console.log(
-      `  ${r.taskId}: baseline=${bAvg.toFixed(1)} augmented=${aAvg.toFixed(1)} delta=${delta > 0 ? "+" : ""}${delta.toFixed(1)}`
+      `    domain avg: baseline=${domAvgBaseline.toFixed(1)} augmented=${domAvgAugmented.toFixed(1)} delta=${domDelta > 0 ? "+" : ""}${domDelta.toFixed(1)}`
     );
+    console.log();
+
+    // --- Per-domain on-chain feedback ---
+    if (submitOnChain && frag.source === "borrow") {
+      const rawScore = Math.round(5 + domDelta);
+      const clampedScore = Math.max(1, Math.min(10, rawScore));
+
+      const evidence = JSON.stringify({
+        domain,
+        tasksEvaluated: domainResults.length,
+        avgBaseline: domAvgBaseline,
+        avgAugmented: domAvgAugmented,
+        delta: domDelta,
+        contentHashes: frag.hashes,
+        perTask: domainResults.map((r) => ({
+          id: r.taskId,
+          baselineAvg: avg(r.baselineScores),
+          augmentedAvg: avg(r.augmentedScores),
+        })),
+      });
+      const evidenceHash = keccak256(toHex(evidence)) as `0x${string}`;
+
+      const evidencePath = join(
+        RESULTS_DIR,
+        `feedback-evidence-${domain}.json`
+      );
+      writeFileSync(evidencePath, evidence);
+
+      console.log(`    Submitting on-chain feedback for ${domain}...`);
+      console.log(`    Score: ${clampedScore}/10 (delta: ${domDelta > 0 ? "+" : ""}${domDelta.toFixed(1)})`);
+      console.log(`    Content hashes: ${frag.hashes.length} fragment(s)`);
+      console.log(
+        `    Contributor agent: ${frag.contributorAgentId}`
+      );
+
+      try {
+        const wallet = getBorrowerWallet();
+        const publicClient = getPublicClient();
+
+        const contributorId = BigInt(frag.contributorAgentId || "0");
+
+        const hash = await giveFeedback(
+          wallet,
+          contributorId,
+          clampedScore,
+          "memory-lend",
+          domain,
+          "",
+          evidenceHash
+        );
+
+        console.log(`    Tx: ${hash}`);
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash,
+        });
+        console.log(`    Block: ${receipt.blockNumber}`);
+        console.log(`    Reputation feedback submitted for ${domain}.`);
+      } catch (err) {
+        console.error(
+          `    Failed to submit feedback for ${domain}:`,
+          err
+        );
+      }
+      console.log();
+    } else if (submitOnChain && frag.source === "local") {
+      console.log(
+        `    Skipping on-chain feedback for ${domain} — fragments are local, not borrowed.`
+      );
+      console.log(
+        `    Run borrow-fragment first to create a borrow receipt.\n`
+      );
+    }
   }
 
-  const avgBaseline = totalBaselineAvg / results.length;
-  const avgAugmented = totalAugmentedAvg / results.length;
-  const avgDelta = avgAugmented - avgBaseline;
+  // Overall
+  const overallBaseline = totalBaselineAvg / results.length;
+  const overallAugmented = totalAugmentedAvg / results.length;
+  const overallDelta = overallAugmented - overallBaseline;
 
-  console.log();
   console.log(
-    `  Overall: baseline=${avgBaseline.toFixed(1)} augmented=${avgAugmented.toFixed(1)} delta=${avgDelta > 0 ? "+" : ""}${avgDelta.toFixed(1)}`
+    `  Overall: baseline=${overallBaseline.toFixed(1)} augmented=${overallAugmented.toFixed(1)} delta=${overallDelta > 0 ? "+" : ""}${overallDelta.toFixed(1)}`
   );
   console.log();
   console.log(
-    avgDelta > 0
+    overallDelta > 0
       ? "Memory fragments improved performance."
-      : avgDelta === 0
+      : overallDelta === 0
         ? "No measurable difference."
         : "Baseline outperformed augmented — check fragment quality."
   );
+}
 
-  // --- Submit reputation feedback on-chain if --feedback flag is set ---
-  const submitOnChain = process.argv.includes("--feedback");
-  if (submitOnChain && config.contributorAgentId && config.borrowerAgentId) {
-    console.log("\n=== SUBMITTING ON-CHAIN FEEDBACK ===");
-
-    // Score: map delta to 1-10 scale (0 delta = 5, +3 delta = 8, -3 delta = 2, clamped)
-    const rawScore = Math.round(5 + avgDelta);
-    const clampedScore = Math.max(1, Math.min(10, rawScore));
-
-    // Build feedback evidence from results
-    const evidence = JSON.stringify({
-      tasksEvaluated: results.length,
-      avgBaselineScore: avgBaseline,
-      avgAugmentedScore: avgAugmented,
-      avgDelta,
-      perTask: results.map((r) => ({
-        id: r.taskId,
-        baselineAvg: avg(r.baselineScores),
-        augmentedAvg: avg(r.augmentedScores),
-      })),
-    });
-    const evidenceHash = keccak256(toHex(evidence)) as `0x${string}`;
-
-    // Save evidence file
-    const evidencePath = join(RESULTS_DIR, "feedback-evidence.json");
-    writeFileSync(evidencePath, evidence);
-
-    // Determine domain from first task
-    const domain = results[0]?.taskId.split("-")[0] || "unknown";
-
-    console.log(`  Score: ${clampedScore}/10 (delta: ${avgDelta > 0 ? "+" : ""}${avgDelta.toFixed(1)})`);
-    console.log(`  Contributor agent: ${config.contributorAgentId}`);
-    console.log(`  Domain: ${domain}`);
-
-    try {
-      const wallet = getBorrowerWallet();
-      const publicClient = getPublicClient();
-
-      const hash = await giveFeedback(
-        wallet,
-        config.contributorAgentId,
-        clampedScore,
-        "memory-lend",
-        domain,
-        "", // feedbackURI — could point to hosted evidence
-        evidenceHash
-      );
-
-      console.log(`  Tx: ${hash}`);
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      console.log(`  Block: ${receipt.blockNumber}`);
-      console.log("  Reputation feedback submitted.");
-    } catch (err) {
-      console.error("  Failed to submit on-chain feedback:", err);
-    }
-  } else if (submitOnChain) {
-    console.log("\nSkipping on-chain feedback — agent IDs not configured.");
-  }
+function loadTasks(): Task[] {
+  return JSON.parse(readFileSync(TASKS_PATH, "utf-8"));
 }
 
 main().catch((err) => {

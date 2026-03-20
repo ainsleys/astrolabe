@@ -7,3 +7,7 @@ dist/
 contracts/out/
 contracts/cache/
 contracts/lib/
+contracts/broadcast/
+
+# Runtime artifacts
+borrows/
