@@ -8,6 +8,24 @@ The core thesis: when a human corrects an agent ("no, not that"), that correctio
 
 This is a hackathon demo (Synthesis, ends 2026-03-22), not a production system.
 
+## Design decisions
+
+These are resolved positions, not open questions. Reference them when making implementation choices.
+
+**Corrections are the signal.** Not all agent memory is worth sharing. `type: feedback` memories — human corrections of agent behavior — are the high-value subset. They are structurally analogous to preference pairs (what the agent did wrong → what the human wanted → why). The extraction pipeline filters for these specifically.
+
+**Reputation is per contributor-within-domain.** Not per-fragment (too granular, insufficient signal per fragment) and not per-contributor (too coarse, mixes unrelated domains). A contributor's aquaculture reputation is independent of their SaaS reputation. The eval harness groups results by domain and submits one feedback tx per domain.
+
+**Inference-time augmentation, not training.** Borrowed corrections are prepended as context, not used for fine-tuning or RL. The structural analogy to RL (correction → improved behavior) holds, but operates at the context layer. No weights are updated.
+
+**Public goods with attribution, not paid access control.** The verify-before-pay flow means borrowers read content before paying. This is intentional. The micropayment compensates the contributor for labor that produced the correction, not for access to it. The analogy is tipping or citation royalties, not DRM.
+
+**ERC-8004 compatible pattern, not live integration.** The Sepolia demo uses mock registries implementing the ERC-8004 interface (`ownerOf`, `giveFeedback`). The canonical ERC-8004 registries are not deployed on Sepolia. The contract and scripts would work unchanged against canonical registries. State this plainly in any submission or demo.
+
+**Privacy requires human review.** `sanitize-fragment.ts` catches obvious PII (credentials, names, paths) via LLM review. But the most sensitive fragments are also the most valuable, and deciding what's safe to share requires human judgment. The review UI (`review/index.html`) exists for this purpose. Sanitization is a tool, not an enforcement boundary.
+
+**Mixed eval results are honest results.** Fragments help where genuine knowledge gaps exist (aquaculture: +2.2 avg delta) and can hurt when the baseline is already strong (service-integration-verification: -3.0). This is why reputation scoring matters — contributors whose fragments consistently produce negative deltas accumulate low reputation.
+
 ## Architecture
 
 ```

@@ -86,6 +86,14 @@ This makes reputation empirical rather than social:
 - High-reputation contributors can charge higher prices
 - The eval harness is the enforcement mechanism, not human curation
 
+### Reputation granularity: contributor-within-domain
+
+Reputation attaches to a contributor-within-domain, not to individual fragments and not to the contributor globally. This is a deliberate design choice:
+
+- **Per-fragment** is too granular. Most fragments are borrowed a handful of times. You can't build statistical signal from 3 borrows. Fragment-level reputation would be permanently noisy.
+- **Per-contributor** is too coarse. A contributor might have deep aquaculture expertise and no SaaS knowledge. A single global score conflates unrelated domains.
+- **Per-contributor-within-domain** captures the actionable signal: "this person's aquaculture corrections consistently help." The eval harness groups results by domain and submits one `giveFeedback` transaction per domain, with the domain as `tag2` in the ERC-8004 call. A borrower looking for aquaculture expertise can query reputation filtered by that tag.
+
 ### Quality bootstrapping
 
 The cold-start problem (no reputation data for new contributors) is addressed by the eval harness itself. A borrower doesn't need to trust a contributor's reputation — they can run the eval before paying (our verify-before-pay flow). The reputation system accelerates discovery but isn't required for the first transaction.
