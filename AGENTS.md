@@ -279,6 +279,31 @@ When updating docs, README text, demo scripts, or submission material:
 - Separate current implementation from target architecture whenever both appear in the same document.
 - Prefer honest language like `the current demo shows`, `the current repo implements`, and `future extensions include`.
 
+## Current Base deployment
+
+| Contract | Address | Chain |
+|----------|---------|-------|
+| OperatorRegistry | `0xb831Be94a83B581855B2802dE85E3f34aC4F5Fc2` | Base |
+| MemoryLending | `0x7d817358A7eaCEB745A1Bb4C83dBE1123B46545D` | Base |
+| ERC-8004 Identity Registry | `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` | Base (canonical) |
+| ERC-8004 Reputation Registry | `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63` | Base (canonical) |
+
+| Identity | ID |
+|----------|-----|
+| Contributor agent | 35279 |
+| Borrower agent | 35280 |
+| Contributor operator | 1 |
+| Borrower operator | 2 |
+
+## Eval results (latest run)
+
+| Domain | Source | Avg delta | Reputation submitted |
+|--------|--------|-----------|---------------------|
+| aquaculture | local fragments | +1.7 | No (not borrowed) |
+| saas-engineering | borrow receipts | -0.9 | Yes (4/10 on-chain) |
+
+The negative SaaS result is honest and expected — the baseline was already strong for one task. The system correctly submitted a low reputation score.
+
 ## Working norms
 
 - Prefer small, verifiable loops over speculative mechanism design.

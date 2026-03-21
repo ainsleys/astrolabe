@@ -1,0 +1,38 @@
+{
+  "taskId": "tilapia-disease-surveillance",
+  "domain": "aquaculture",
+  "prompt": "Identify the three highest-priority disease surveillance investments for small-scale tilapia farmers in sub-Saharan Africa, considering pathogen diversity and diagnostic infrastructure gaps.",
+  "baselineResponse": "Based on pathogen prevalence and diagnostic infrastructure challenges in sub-Saharan Africa, here are the three highest-priority disease surveillance investments for small-scale tilapia farmers:\n\n## 1. **Streptococcosis Monitoring Systems**\n- **Priority rationale**: Streptococcus agalactiae and S. iniae are the most economically devastating bacterial pathogens affecting tilapia across the region\n- **Investment focus**: \n  - Rapid field diagnostic kits (lateral flow assays)\n  - Training programs for visual identification of clinical signs\n  - Regional laboratory networks for strain typing and antimicrobial sensitivity testing\n- **Infrastructure consideration**: Builds on existing veterinary extension systems\n\n## 2. **Viral Hemorrhagic Septicemia (VHS) and Tilapia Lake Virus (TiLV) Surveillance**\n- **Priority rationale**: These emerging viral threats have high mortality rates and limited treatment options, making prevention critical\n- **Investment focus**:\n  - Mobile PCR testing units serving multiple farming clusters\n  - Cold-chain sample transport networks\n  - Early warning systems linking farms to regional diagnostic centers\n- **Infrastructure consideration**: Leverages existing human health laboratory capacity where possible\n\n## 3. **Parasitic Disease Monitoring (Trichodina and Ichthyophthirius)**\n- **Priority rationale**: Highly prevalent, directly observable, and manageable with proper intervention\n- **Investment focus**:\n  - Basic microscopy training and equipment for farmer cooperatives\n  - Water quality testing kits (since parasitic outbreaks often correlate with poor water conditions)\n  - Community-based monitoring programs with smartphone-based reporting\n- **Infrastructure consideration**: Requires minimal laboratory infrastructure, maximizing accessibility\n\nThese investments prioritize diseases with high impact, available interventions, and feasible diagnostic approaches given resource constraints.",
+  "augmentedResponse": "Based on pathogen impact and diagnostic feasibility in resource-limited settings, the three highest-priority disease surveillance investments are:\n\n## Priority 1: Tilapia Lake Virus (TiLV) Field Detection\n\n**Investment: RT-LAMP field-deployable diagnostic kits**\n\nTiLV is the single highest-impact pathogen for African tilapia - causing 20-90% mortality with no treatment options. It's confirmed across the Lake Victoria basin (Tanzania, Uganda, Kenya) and spreading rapidly. Unlike bacterial diseases that farmers can attempt to treat, TiLV requires early detection for containment.\n\n**Why RT-LAMP over RT-PCR:** Works without cold chain, provides results in 30-60 minutes, and costs ~$10 per test versus $50+ for PCR. WorldFish has validated protocols specifically for African conditions.\n\n**Implementation:** Train district veterinary officers and establish sentinel surveillance at Lake Victoria cage farms (high-density operations that amplify and detect outbreaks first).\n\n## Priority 2: Streptococcosis Rapid Diagnosis + AMR Monitoring\n\n**Investment: Culture-based diagnostics with antibiotic sensitivity testing**\n\nStreptococcus agalactiae causes massive losses in warm-water African tilapia (>27°C optimal) but is treatable if caught early with appropriate antibiotics. The critical problem is farmers self-medicating with oxytetracycline from agricultural supply shops, driving multi-drug resistance.\n\n**Diagnostic approach:** Simple agar plate culture (cheap, robust) paired with clinical recognition training for extension workers. Key symptoms: exophthalmia (pop-eye), erratic swimming, brain lesions.\n\n**AMR component:** Establish baseline resistance profiles across major producing regions. Ghana and Nigeria already show concerning resistance patterns.\n\n## Priority 3: Parasitic Load Assessment Infrastructure\n\n**Investment: Basic microscopy + parasitology training**\n\nMonogenean ectoparasites (Cichlidogyrus, Gyrodactylus) and microsporidia cause chronic 10-30% productivity losses that farmers don't recognize as disease - attributing poor performance to \"bad water\" or genetics instead.\n\n**Why this matters:** It's the largest \"silent\" production loss in African tilapia aquaculture, but completely invisible without microscopy. African parasite fauna is distinct and under-studied compared to Asian populations.\n\n**Implementation:** $200 microscopes + wet-mount technique training for extension workers. One trained technician can diagnose most ectoparasites affecting an entire district's farms.\n\n## Strategic Rationale\n\nThese three investments target: (1) the most devastating untreatable disease, (2) the most common treatable disease with growing resistance, and (3) the largest chronic production drag. Together they address acute mortality, treatment failure, and hidden productivity losses - the three major categories of disease impact in small-scale African aquaculture.\n\nThe diagnostic approaches scale with existing infrastructure rather than requiring expensive laboratory buildouts that most African countries cannot sustain.",
+  "augmentedIsResponse": "2",
+  "judgeResult": {
+    "response_1": {
+      "accuracy": 7,
+      "specificity": 6,
+      "actionability": 6
+    },
+    "response_2": {
+      "accuracy": 9,
+      "specificity": 9,
+      "actionability": 8
+    },
+    "better": "2",
+    "explanation": "Response 2 demonstrates deeper technical knowledge with specific diagnostic protocols, cost estimates, validated methodologies, and region-specific pathogen data that would enable immediate implementation."
+  },
+  "baselineScores": {
+    "accuracy": 7,
+    "specificity": 6,
+    "actionability": 6
+  },
+  "augmentedScores": {
+    "accuracy": 9,
+    "specificity": 9,
+    "actionability": 8
+  },
+  "source": "local",
+  "contentHashes": [
+    "0xe9abded920c0bc24a73d3b8c448aeb73cc6582c5398cbd76079c96157f28c34a",
+    "0x587a94c52b105029abe61a35f41d53ece1d38f260799459686eb79d7846bd7d0",
+    "0x584989c469a3adea24c105711c16e7f08efccd97864d270c0429b132297ce597"
+  ]
+}

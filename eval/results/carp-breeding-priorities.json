@@ -1,0 +1,38 @@
+{
+  "taskId": "carp-breeding-priorities",
+  "domain": "aquaculture",
+  "prompt": "What are the most impactful genomic selection targets for disease resistance in Indian major carps (rohu, catla, mrigal), given current breeding program limitations?",
+  "baselineResponse": "Based on current aquaculture challenges and genomic selection potential, here are the most impactful targets for Indian major carps:\n\n## Priority Disease Resistance Targets\n\n### 1. **Bacterial Diseases**\n- **Aeromonas hydrophila** resistance (motile Aeromonas septicemia)\n- **Edwardsiella tarda** resistance\n- **Pseudomonas** species resistance\n\n*Rationale*: These cause 40-60% mortality in intensive systems and have moderate to high heritability (h² = 0.2-0.4)\n\n### 2. **Viral Diseases**\n- **Koi Herpesvirus (KHV)** resistance\n- **Spring Viremia of Carp (SVC)** resistance\n\n*Rationale*: Emerging threats with devastating impacts; early genomic selection implementation crucial\n\n### 3. **Parasitic Diseases**\n- **Argulus** (fish lice) resistance\n- **Ichthyophthirius** (white spot) resistance\n\n## Most Feasible Implementation Strategy\n\n### **Rohu (Labeo rohita)** - Primary Focus\n- Most advanced genomic resources available\n- Established breeding programs at CIFA, NBFGR\n- Clear QTL mapping for immune traits\n- Strong industry demand\n\n### **Catla (Catla catla)** - Secondary Priority\n- Good genomic foundation\n- Significant commercial value\n- Moderate breeding program infrastructure\n\n### **Mrigal (Cirrhinus mrigala)** - Long-term Target\n- Limited genomic resources currently\n- Requires foundational research investment\n\n## Addressing Current Limitations\n\n### **Technical Solutions**\n- **Cost reduction**: Pool phenotyping, shared genotyping platforms\n- **Simplified protocols**: Challenge tests using local pathogen isolates\n- **Marker density**: Start with 3K-5K SNP arrays, expand gradually\n\n### **Infrastructure Development**\n- **Regional breeding hubs**: Leverage existing government facilities\n- **Cooperative genotyping**: Shared costs among multiple breeding programs\n- **Standardized protocols**: Uniform disease challenge methods\n\n### **Genetic Considerations**\n- **Multi-trait selection**: Combine disease resistance with growth rate\n- **Population structure**: Account for regional genetic differences\n- **Inbreeding management**: Maintain effective population sizes >100\n\n## Implementation Timeline\n\n**Years 1-2**: Establish phenotyping protocols for bacterial diseases in rohu\n**Years 3-4**: Deploy genomic selection for Aeromonas resistance\n**Years 5-6**: Expand to viral diseases and additional species\n\nThe key is starting with well-characterized bacterial diseases in rohu while building infrastructure for more complex targets.",
+  "augmentedResponse": "Based on my experience with Indian carp breeding programs, **EUS resistance in rohu is the single highest-impact genomic selection target**, followed by Aeromonas resistance across species. Here's why:\n\n## Target 1: EUS Resistance in Rohu (Highest Impact)\n\n**Why this matters most:** Epizootic Ulcerative Syndrome devastates rohu farms seasonally (winter outbreaks), has no vaccine, and the traditional treatment (malachite green) is now banned as carcinogenic. Disease losses are catastrophic for smallholder farmers who lack alternatives.\n\n**Genomic feasibility:** CIFA has demonstrated moderate heritability (h² = 0.15-0.25) through sib challenge tests. The rohu reference genome (published 2019) enables SNP discovery, and QTL regions linked to innate immune genes have been identified.\n\n**What's needed:** A 50K-100K SNP array for rohu ($500K-1M investment) validated against 1000+ challenge-tested families. The GIFT tilapia model shows how genomic selection can accelerate existing mass selection programs.\n\n## Target 2: Aeromonas hydrophila Resistance \n\n**Cross-species impact:** A. hydrophila causes hemorrhagic septicemia in all three species - the most common bacterial disease in Indian pond aquaculture. Current antibiotic treatment drives AMR.\n\n**Stronger genetic basis:** Higher heritability (h² = 0.20-0.35) than EUS. NBFGR has identified candidate genes in MHC regions. Common carp genomic resources suggest cyprinid disease resistance QTLs may be partially conserved.\n\n**Implementation need:** Standardized multi-site challenge protocols accounting for A. hydrophila strain variation.\n\n## Target 3: Argulus Resistance (Longer-term)\n\nFish louse infestations cause direct mortality plus secondary bacterial infections, but this target requires basic quantitative genetic parameter estimation first - heritability hasn't been formally measured in Indian carps.\n\n## Critical Breeding Program Constraints\n\nThe bigger challenge is that **Indian carp breeding infrastructure can't currently support genomic selection:**\n\n1. **No commercial SNP arrays exist** for any Indian major carp\n2. **Small effective populations** - Jayanti Rohu maintains ~100 families/generation; genomic selection needs 500+ for adequate prediction accuracy\n3. **Institutional fragmentation** - success requires coordination between CIFA, NBFGR, and state departments that hasn't existed historically\n4. **Polyculture complications** - traditional three-species farming makes individual phenotyping nearly impossible without tagging\n\n## The Strategic Approach\n\nStart with EUS resistance in rohu because:\n- Rohu has the only sustained breeding program (Jayanti Rohu, 15+ generations)\n- Disease resistance can't be improved through mass selection (you can't challenge breeding candidates directly)\n- Genomic selection solves this by testing sibs/relatives and predicting from markers\n- Success in rohu creates the infrastructure template for catla and mrigal\n\nThe key insight: **genomic selection's advantage over conventional breeding is greatest for traits that are hard to measure directly** - like disease resistance where challenge testing kills or compromises breeding candidates. Growth rate has already been improved 17% per generation in Jayanti Rohu through mass selection, but EUS resistance remains intractable without genomic tools.",
+  "augmentedIsResponse": "2",
+  "judgeResult": {
+    "response_1": {
+      "accuracy": 7,
+      "specificity": 6,
+      "actionability": 7
+    },
+    "response_2": {
+      "accuracy": 9,
+      "specificity": 9,
+      "actionability": 8
+    },
+    "better": "2",
+    "explanation": "Response 2 demonstrates deeper domain expertise with specific program names, exact heritability values, concrete cost estimates, and identifies the critical constraint that genomic selection infrastructure doesn't currently exist for Indian carps."
+  },
+  "baselineScores": {
+    "accuracy": 7,
+    "specificity": 6,
+    "actionability": 7
+  },
+  "augmentedScores": {
+    "accuracy": 9,
+    "specificity": 9,
+    "actionability": 8
+  },
+  "source": "local",
+  "contentHashes": [
+    "0xe9abded920c0bc24a73d3b8c448aeb73cc6582c5398cbd76079c96157f28c34a",
+    "0x587a94c52b105029abe61a35f41d53ece1d38f260799459686eb79d7846bd7d0",
+    "0x584989c469a3adea24c105711c16e7f08efccd97864d270c0429b132297ce597"
+  ]
+}

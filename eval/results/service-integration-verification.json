@@ -1,0 +1,39 @@
+{
+  "taskId": "service-integration-verification",
+  "domain": "saas-engineering",
+  "prompt": "A product has optional third-party service integrations (OCR, payment processing) that are conditionally enabled via environment variables. A developer claims a service is 'not connected' based on reading the codebase. What verification steps should be taken before making claims about production service state?",
+  "baselineResponse": "Here's a systematic approach to verify the actual production service state before making definitive claims:\n\n## 1. Environment Configuration Verification\n\n```bash\n# Check actual environment variables in production\nkubectl get configmap app-config -o yaml\nkubectl get secret app-secrets -o yaml\n\n# Or via application endpoints if available\ncurl https://api.prod.com/health/integrations\n```\n\n## 2. Runtime Configuration Inspection\n\n```python\n# Add temporary logging or create a debug endpoint\n@app.route('/debug/config')\ndef debug_config():\n    return {\n        'ocr_enabled': bool(os.getenv('OCR_SERVICE_ENABLED')),\n        'payment_enabled': bool(os.getenv('PAYMENT_SERVICE_ENABLED')),\n        'ocr_endpoint': os.getenv('OCR_SERVICE_URL', 'not set'),\n        # Don't log sensitive keys, just their presence\n        'payment_key_configured': bool(os.getenv('PAYMENT_API_KEY'))\n    }\n```\n\n## 3. Application Logs Analysis\n\n```bash\n# Look for integration initialization logs\ngrep -i \"ocr\\|payment\" /var/log/app/*.log | head -20\n\n# Check for service calls or connection attempts\ngrep -E \"(connecting to|initialized|failed to connect)\" app.log\n```\n\n## 4. Network and Service Discovery\n\n```bash\n# Check if services are actually reachable\nnslookup ocr-service.internal\ncurl -I https://payment-gateway.external.com/health\n\n# Verify network policies allow connections\nkubectl describe networkpolicy app-network-policy\n```\n\n## 5. Feature Flag and Toggle Systems\n\n```javascript\n// Check if feature flags override environment config\nconst featureFlags = await getFeatureFlags();\nconst ocrEnabled = featureFlags.ocr_integration ?? process.env.OCR_ENABLED;\n```\n\n## 6. Database Configuration Check\n\n```sql\n-- Many apps store integration configs in DB\nSELECT service_name, enabled, configuration \nFROM service_integrations \nWHERE service_name IN ('ocr', 'payment_processor');\n```\n\n## 7. Monitoring and Metrics\n\n```bash\n# Check metrics for service calls\ncurl \"http://prometheus:9090/api/v1/query?query=http_requests_total{service='ocr'}\"\n\n# Application performance monitoring\n# Look for traces of integration calls in APM tools\n```\n\n## 8. Load Balancer/API Gateway Config\n\n```bash\n# Check if routes to integrations exist\nkubectl get ingress -o yaml | grep -A5 -B5 \"ocr\\|payment\"\n\n# API Gateway configuration\naws apigateway get-resources --rest-api-id abc123\n```\n\n## 9. Service Health Endpoints\n\n```bash\n# Test integration health endpoints directly\ncurl https://api.prod.com/integrations/ocr/health\ncurl https://api.prod.com/integrations/payment/health\n```\n\n## 10. Code vs Reality Validation\n\n```python\n# Create a validation script\ndef validate_integrations():\n    results = {}\n    \n    # Check environment\n    results['env_ocr'] = os.getenv('OCR_ENABLED') == 'true'\n    \n    # Check actual connectivity\n    try:\n        response = requests.get(f\"{OCR_SERVICE_URL}/health\", timeout=5)\n        results['ocr_reachable'] = response.status_code == 200\n    except:\n        results['ocr_reachable'] = False\n    \n    # Check recent usage\n    results['ocr_recent_calls'] = get_recent_ocr_calls_count() > 0\n    \n    return results\n```\n\n## Key Verification Principles:\n\n1. **Don't trust code alone** - Runtime state can differ significantly\n2. **Check multiple sources** - Environment, database, feature flags, etc.\n3. **Test connectivity** - Services might be configured but unreachable\n4. **Look for usage patterns** - Recent logs/metrics show actual usage\n5. **Verify end-to-end** - Configuration chain from environment to actual service calls\n\n## Safe Approach:\n\nInstead of claiming \"not connected,\" use language like:\n- \"Based on the current codebase, the service appears to be conditionally enabled\"\n- \"Need to verify production environment variables to confirm current state\"\n- \"Integration capability exists but requires runtime verification\"\n\nThis approach prevents incorrect assumptions that could impact troubleshooting or architectural decisions.",
+  "augmentedResponse": "Based on the domain expertise, here are the verification steps to take before making claims about production service state:\n\n## Verification Steps\n\n1. **Check actual deployment environment configuration**\n   - Look for the specific credential/config environment variables in the production deployment\n   - Don't assume from code structure or schema definitions that variables aren't set\n\n2. **Trace the conditional logic**\n   - Follow how the application selects between mock/test implementations and real service clients\n   - Understand that the same codebase can behave differently based on runtime configuration\n\n3. **Avoid historical assumptions**\n   - Don't assume current state based on early development phases\n   - Services get connected over time - what was true weeks ago may not be true now\n\n4. **If you can't verify directly, be explicit**\n   - Say \"I can't verify whether [service] is active - check the [ENV_VAR] setting in production\"\n   - Don't assert services are mocked or disconnected without confirming actual deployment state\n\n## Why This Matters\n\nThe common mistake is reading test code (which always uses mocks) or seeing optional config schemas and concluding services aren't connected. The reality is that production behavior depends on actual environment configuration, not code structure.\n\nMaking incorrect claims about service state can mislead stakeholders about product capabilities and waste debugging time when issues arise.",
+  "augmentedIsResponse": "1",
+  "judgeResult": {
+    "response_1": {
+      "accuracy": 8,
+      "specificity": 4,
+      "actionability": 5
+    },
+    "response_2": {
+      "accuracy": 9,
+      "specificity": 9,
+      "actionability": 9
+    },
+    "better": "2",
+    "explanation": "Response 2 provides specific commands, code examples, and concrete verification steps that someone could immediately execute, while Response 1 offers mainly conceptual guidance."
+  },
+  "baselineScores": {
+    "accuracy": 9,
+    "specificity": 9,
+    "actionability": 9
+  },
+  "augmentedScores": {
+    "accuracy": 8,
+    "specificity": 4,
+    "actionability": 5
+  },
+  "source": "borrow",
+  "contentHashes": [
+    "0xf59eb0a5cc46300782d44348e70ae942af756942521d7a34b938442c4f83485b",
+    "0x9e00dd7309bb6d001bb016bb401ffb833dd66a9436505bbd9c018409efc7a1bd",
+    "0x4efa76eb13a887f28fda4038cb019d2cac8655a7e05731e8766b3276f35d8c6d",
+    "0x19be9e02ca72c5d66b8765cab311e1c4f7cfeb2de9235d4ea5613326da2d1997"
+  ]
+}
