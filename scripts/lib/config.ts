@@ -12,11 +12,12 @@ function optionalEnv(name: string, fallback: string): string {
 }
 
 export const config = {
-  sepoliaRpcUrl: requireEnv("SEPOLIA_RPC_URL"),
+  rpcUrl: requireEnv("RPC_URL"),
   deployerKey: requireEnv("DEPLOYER_PRIVATE_KEY") as `0x${string}`,
   contributorKey: requireEnv("CONTRIBUTOR_PRIVATE_KEY") as `0x${string}`,
   borrowerKey: requireEnv("BORROWER_PRIVATE_KEY") as `0x${string}`,
   memoryLendingAddress: requireEnv("MEMORY_LENDING_ADDRESS") as `0x${string}`,
+  operatorRegistryAddress: requireEnv("OPERATOR_REGISTRY_ADDRESS") as `0x${string}`,
   identityRegistry: optionalEnv(
     "IDENTITY_REGISTRY",
     "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
@@ -27,20 +28,73 @@ export const config = {
   ) as `0x${string}`,
   contributorAgentId: BigInt(optionalEnv("CONTRIBUTOR_AGENT_ID", "0")),
   borrowerAgentId: BigInt(optionalEnv("BORROWER_AGENT_ID", "0")),
+  contributorOperatorId: BigInt(optionalEnv("CONTRIBUTOR_OPERATOR_ID", "0")),
+  borrowerOperatorId: BigInt(optionalEnv("BORROWER_OPERATOR_ID", "0")),
   anthropicApiKey: optionalEnv("ANTHROPIC_API_KEY", ""),
   fragmentServerPort: parseInt(optionalEnv("FRAGMENT_SERVER_PORT", "3000")),
 };
+
+export const OPERATOR_REGISTRY_ABI = [
+  {
+    type: "function",
+    name: "registerOperator",
+    inputs: [{ name: "operatorURI", type: "string" }],
+    outputs: [{ name: "operatorId", type: "uint256" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "linkAgent",
+    inputs: [
+      { name: "operatorId", type: "uint256" },
+      { name: "agentId", type: "uint256" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "getOperator",
+    inputs: [{ name: "operatorId", type: "uint256" }],
+    outputs: [
+      {
+        name: "",
+        type: "tuple",
+        components: [
+          { name: "owner", type: "address" },
+          { name: "operatorURI", type: "string" },
+          { name: "registeredAt", type: "uint256" },
+        ],
+      },
+    ],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getOperatorByAgent",
+    inputs: [{ name: "agentId", type: "uint256" }],
+    outputs: [{ name: "operatorId", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "nextOperatorId",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+] as const satisfies Abi;
 
 export const MEMORY_LENDING_ABI = [
   {
     type: "function",
     name: "publishFragment",
     inputs: [
-      { name: "contributorAgentId", type: "uint256" },
+      { name: "operatorId", type: "uint256" },
       { name: "contentHash", type: "bytes32" },
       { name: "contentURI", type: "string" },
       { name: "domain", type: "string" },
-      { name: "priceWei", type: "uint256" },
+      { name: "priceCredits", type: "uint256" },
     ],
     outputs: [{ name: "fragmentId", type: "uint256" }],
     stateMutability: "nonpayable",
@@ -50,10 +104,10 @@ export const MEMORY_LENDING_ABI = [
     name: "borrowFragment",
     inputs: [
       { name: "fragmentId", type: "uint256" },
-      { name: "borrowerAgentId", type: "uint256" },
+      { name: "borrowerOperatorId", type: "uint256" },
     ],
     outputs: [],
-    stateMutability: "payable",
+    stateMutability: "nonpayable",
   },
   {
     type: "function",
@@ -71,12 +125,12 @@ export const MEMORY_LENDING_ABI = [
         name: "",
         type: "tuple",
         components: [
-          { name: "contributorAgentId", type: "uint256" },
+          { name: "operatorId", type: "uint256" },
           { name: "contributor", type: "address" },
           { name: "contentHash", type: "bytes32" },
           { name: "contentURI", type: "string" },
           { name: "domain", type: "string" },
-          { name: "priceWei", type: "uint256" },
+          { name: "priceCredits", type: "uint256" },
           { name: "createdAt", type: "uint256" },
           { name: "active", type: "bool" },
         ],
@@ -92,15 +146,38 @@ export const MEMORY_LENDING_ABI = [
     stateMutability: "view",
   },
   {
+    type: "function",
+    name: "getBalance",
+    inputs: [{ name: "operatorId", type: "uint256" }],
+    outputs: [{ name: "", type: "int256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getCreditLine",
+    inputs: [{ name: "operatorId", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "setCreditLine",
+    inputs: [
+      { name: "operatorId", type: "uint256" },
+      { name: "newLimit", type: "uint256" },
+    ],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
     type: "event",
     name: "FragmentPublished",
     inputs: [
       { name: "fragmentId", type: "uint256", indexed: true },
-      { name: "contributorAgentId", type: "uint256", indexed: true },
-      { name: "contributor", type: "address", indexed: false },
+      { name: "operatorId", type: "uint256", indexed: true },
       { name: "contentHash", type: "bytes32", indexed: false },
       { name: "domain", type: "string", indexed: false },
-      { name: "priceWei", type: "uint256", indexed: false },
+      { name: "priceCredits", type: "uint256", indexed: false },
     ],
   },
   {
@@ -108,9 +185,9 @@ export const MEMORY_LENDING_ABI = [
     name: "FragmentBorrowed",
     inputs: [
       { name: "fragmentId", type: "uint256", indexed: true },
-      { name: "borrowerAgentId", type: "uint256", indexed: true },
-      { name: "contributorAgentId", type: "uint256", indexed: true },
-      { name: "pricePaid", type: "uint256", indexed: false },
+      { name: "borrowerOperatorId", type: "uint256", indexed: true },
+      { name: "contributorOperatorId", type: "uint256", indexed: true },
+      { name: "priceCredits", type: "uint256", indexed: false },
       { name: "contentHash", type: "bytes32", indexed: false },
     ],
   },

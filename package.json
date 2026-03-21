@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "register-operator": "npx tsx scripts/register-operator.ts",
     "publish-fragment": "npx tsx scripts/publish-fragment.ts",
     "borrow-fragment": "npx tsx scripts/borrow-fragment.ts",
     "give-feedback": "npx tsx scripts/give-feedback.ts",

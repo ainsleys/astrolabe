@@ -1,4 +1,4 @@
-import { keccak256, toHex, formatEther } from "viem";
+import { keccak256, toHex } from "viem";
 import { writeFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -34,12 +34,33 @@ async function main() {
   }
 
   console.log(`  Domain: ${fragment.domain}`);
-  console.log(`  Price: ${formatEther(fragment.priceWei)} ETH`);
+  console.log(`  Price: ${fragment.priceCredits} credits`);
   console.log(`  Content URI: ${fragment.contentURI}`);
   console.log(`  Expected hash: ${fragment.contentHash}`);
 
-  // Step 2: Fetch content from URI
-  console.log("Fetching content from URI...");
+  // Step 2: Display borrower credit balance and credit line
+  console.log(`\nBorrower credit status (operator ${config.borrowerOperatorId}):`);
+
+  const balance = await publicClient.readContract({
+    address: config.memoryLendingAddress,
+    abi: MEMORY_LENDING_ABI,
+    functionName: "getBalance",
+    args: [config.borrowerOperatorId],
+  });
+
+  const creditLine = await publicClient.readContract({
+    address: config.memoryLendingAddress,
+    abi: MEMORY_LENDING_ABI,
+    functionName: "getCreditLine",
+    args: [config.borrowerOperatorId],
+  });
+
+  console.log(`  Current balance: ${balance} credits`);
+  console.log(`  Credit line: ${creditLine} credits`);
+  console.log(`  Available to borrow: ${BigInt(creditLine) + BigInt(balance)} credits`);
+
+  // Step 3: Fetch content from URI
+  console.log("\nFetching content from URI...");
   const response = await fetch(fragment.contentURI);
   if (!response.ok) {
     console.error(
@@ -50,25 +71,24 @@ async function main() {
   const content = await response.text();
   console.log(`  Fetched ${content.length} bytes`);
 
-  // Step 3: Verify content hash BEFORE paying
+  // Step 4: Verify content hash BEFORE borrowing
   const actualHash = keccak256(toHex(content));
   console.log(`  Actual hash: ${actualHash}`);
   if (actualHash !== fragment.contentHash) {
-    console.error("CONTENT HASH MISMATCH — aborting. No payment sent.");
+    console.error("CONTENT HASH MISMATCH — aborting. No borrow recorded.");
     console.error(`  Expected: ${fragment.contentHash}`);
     console.error(`  Got:      ${actualHash}`);
     process.exit(1);
   }
   console.log("  Hash verified.");
 
-  // Step 4: Send borrow transaction
-  console.log("Sending borrow transaction...");
+  // Step 5: Send borrow transaction (no ETH payment — credit-based)
+  console.log("\nSending borrow transaction...");
   const hash = await wallet.writeContract({
     address: config.memoryLendingAddress,
     abi: MEMORY_LENDING_ABI,
     functionName: "borrowFragment",
-    args: [fragmentId, config.borrowerAgentId],
-    value: fragment.priceWei,
+    args: [fragmentId, config.borrowerOperatorId],
     account: wallet.account!,
     chain: wallet.chain,
   });
@@ -76,10 +96,10 @@ async function main() {
   console.log(`  Tx: ${hash}`);
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   console.log(`  Block: ${receipt.blockNumber}`);
-  console.log(`  Borrower agent ID: ${config.borrowerAgentId}`);
-  console.log(`  Contributor agent ID: ${fragment.contributorAgentId}`);
+  console.log(`  Borrower operator ID: ${config.borrowerOperatorId}`);
+  console.log(`  Contributor operator ID: ${fragment.operatorId}`);
 
-  // Step 5: Save borrow receipt
+  // Step 6: Save borrow receipt
   mkdirSync(BORROWS_DIR, { recursive: true });
 
   const borrowReceipt = {
@@ -87,9 +107,9 @@ async function main() {
     domain: fragment.domain,
     contentHash: fragment.contentHash,
     contentURI: fragment.contentURI,
-    contributorAgentId: fragment.contributorAgentId.toString(),
-    borrowerAgentId: config.borrowerAgentId.toString(),
-    priceWei: fragment.priceWei.toString(),
+    contributorOperatorId: fragment.operatorId.toString(),
+    borrowerOperatorId: config.borrowerOperatorId.toString(),
+    priceCredits: fragment.priceCredits.toString(),
     borrowTxHash: hash,
     blockNumber: receipt.blockNumber.toString(),
     content,

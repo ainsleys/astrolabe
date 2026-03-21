@@ -1,4 +1,4 @@
-import { keccak256, toHex, parseEther } from "viem";
+import { keccak256, toHex } from "viem";
 import { config, MEMORY_LENDING_ABI } from "./lib/config.js";
 import { getPublicClient, getContributorWallet } from "./lib/wallet.js";
 import { readFileSync, copyFileSync, existsSync } from "fs";
@@ -11,10 +11,10 @@ const FRAGMENTS_DIR = resolve(join(__dirname, "..", "fragments"));
 async function main() {
   const contentPath = process.argv[2];
   const domain = process.argv[3] || "aquaculture";
-  const priceEth = process.argv[4] || "0.001";
+  const priceCreditsStr = process.argv[4] || "3";
 
   if (!contentPath) {
-    console.error("Usage: publish-fragment <content-file> [domain] [price-eth]");
+    console.error("Usage: publish-fragment <content-file> [domain] [price-credits]");
     process.exit(1);
   }
 
@@ -37,14 +37,14 @@ async function main() {
   }
 
   const contentURI = `http://localhost:${config.fragmentServerPort}/${servedName}`;
-  const priceWei = parseEther(priceEth);
+  const priceCredits = BigInt(priceCreditsStr);
 
   console.log("Publishing fragment...");
   console.log(`  Domain: ${domain}`);
-  console.log(`  Price: ${priceEth} ETH`);
+  console.log(`  Price: ${priceCreditsStr} credits`);
   console.log(`  Content hash: ${contentHash}`);
   console.log(`  Content URI: ${contentURI}`);
-  console.log(`  Contributor agent ID: ${config.contributorAgentId}`);
+  console.log(`  Contributor operator ID: ${config.contributorOperatorId}`);
 
   const publicClient = getPublicClient();
   const wallet = getContributorWallet();
@@ -53,7 +53,7 @@ async function main() {
     address: config.memoryLendingAddress,
     abi: MEMORY_LENDING_ABI,
     functionName: "publishFragment",
-    args: [config.contributorAgentId, contentHash, contentURI, domain, priceWei],
+    args: [config.contributorOperatorId, contentHash, contentURI, domain, priceCredits],
     account: wallet.account!,
     chain: wallet.chain,
   });
@@ -68,7 +68,7 @@ async function main() {
       log.topics[0] ===
       keccak256(
         toHex(
-          "FragmentPublished(uint256,uint256,address,bytes32,string,uint256)"
+          "FragmentPublished(uint256,uint256,bytes32,string,uint256)"
         )
       )
   );

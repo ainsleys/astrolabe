@@ -2,26 +2,25 @@ import {
   createPublicClient,
   createWalletClient,
   http,
-  type PublicClient,
   type WalletClient,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { sepolia } from "viem/chains";
+import { base } from "viem/chains";
 import { config } from "./config.js";
 
-export function getPublicClient(): PublicClient {
+export function getPublicClient() {
   return createPublicClient({
-    chain: sepolia,
-    transport: http(config.sepoliaRpcUrl),
+    chain: base,
+    transport: http(config.rpcUrl),
   });
 }
 
-export function getWalletClient(privateKey: `0x${string}`): WalletClient {
+export function getWalletClient(privateKey: `0x${string}`) {
   const account = privateKeyToAccount(privateKey);
   return createWalletClient({
     account,
-    chain: sepolia,
-    transport: http(config.sepoliaRpcUrl),
+    chain: base,
+    transport: http(config.rpcUrl),
   });
 }
 

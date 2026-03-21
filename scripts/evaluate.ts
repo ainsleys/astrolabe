@@ -55,9 +55,9 @@ interface BorrowReceipt {
   domain: string;
   contentHash: string;
   contentURI: string;
-  contributorAgentId: string;
-  borrowerAgentId: string;
-  priceWei: string;
+  contributorOperatorId: string;
+  borrowerOperatorId: string;
+  priceCredits: string;
   borrowTxHash: string;
   blockNumber: string;
   content: string;
@@ -112,7 +112,7 @@ type FragmentSource = {
   content: string;
   hashes: string[];
   source: "borrow" | "local";
-  contributorAgentId?: string;
+  contributorOperatorId?: string;
 };
 
 function loadFragmentsForDomain(domain: string): FragmentSource | null {
@@ -123,7 +123,7 @@ function loadFragmentsForDomain(domain: string): FragmentSource | null {
       content: receipts.map((r) => r.content).join("\n\n---\n\n"),
       hashes: receipts.map((r) => r.contentHash),
       source: "borrow",
-      contributorAgentId: receipts[0].contributorAgentId,
+      contributorOperatorId: receipts[0].contributorOperatorId,
     };
   }
 
@@ -425,14 +425,18 @@ async function main() {
       console.log(`    Score: ${clampedScore}/10 (delta: ${domDelta > 0 ? "+" : ""}${domDelta.toFixed(1)})`);
       console.log(`    Content hashes: ${frag.hashes.length} fragment(s)`);
       console.log(
-        `    Contributor agent: ${frag.contributorAgentId}`
+        `    Contributor operator: ${frag.contributorOperatorId}`
+      );
+      console.log(
+        `    Feedback target (agent ID): ${config.contributorAgentId}`
       );
 
       try {
         const wallet = getBorrowerWallet();
         const publicClient = getPublicClient();
 
-        const contributorId = BigInt(frag.contributorAgentId || "0");
+        // giveFeedback uses agentId (ERC-8004 interface), not operatorId
+        const contributorId = config.contributorAgentId;
 
         const hash = await giveFeedback(
           wallet,
