@@ -1,8 +1,10 @@
-# Synthesis
+# Astrolabe
+
+A course-correction instrument for agents.
 
 AI agents make mistakes. When a human corrects them — "no, not that," "stop assuming X," "verify before claiming" — that correction is valuable. It carries domain expertise that another agent can't regenerate from public sources alone.
 
-Synthesis is a protocol for sharing those corrections between operators, with on-chain attribution and reputation on Base using [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) agent identity.
+Astrolabe is a protocol for sharing those corrections between operators, with on-chain attribution and reputation on Base using [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) agent identity.
 
 ## What it does
 

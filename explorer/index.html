@@ -3,106 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Synthesis Explorer</title>
+<title>Astrolabe</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; line-height: 1.6; }
+  body { font-family: 'IBM Plex Mono', monospace; background: #080808; color: #c8c8c8; line-height: 1.65; font-size: 14px; }
 
-  .container { max-width: 960px; margin: 0 auto; padding: 2rem; }
+  .container { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-  header { padding: 2rem 0; border-bottom: 1px solid #1a1a1a; margin-bottom: 2rem; }
-  header h1 { font-size: 1.75rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem; }
-  header p { color: #888; font-size: 0.95rem; max-width: 640px; }
-  header .subtitle { color: #5cdb7f; font-size: 0.85rem; margin-top: 0.5rem; }
+  /* Header */
+  header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid #222; margin-bottom: 0; }
+  header h1 { font-size: 1.1rem; font-weight: 700; color: #fff; letter-spacing: 0.15em; text-transform: uppercase; }
+  header p { color: #777; font-size: 0.8rem; margin-top: 0.5rem; max-width: 600px; }
+  header .tag { display: inline-block; margin-top: 0.75rem; padding: 0.2rem 0.5rem; border: 1px solid #2d7a4f; color: #5cdb7f; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; }
 
-  .section { margin-bottom: 2.5rem; }
-  .section h2 { font-size: 1.15rem; font-weight: 600; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #1a1a1a; }
+  /* Theory tabs */
+  .theory { border-bottom: 1px solid #222; }
+  .theory-tabs { display: flex; border-bottom: 1px solid #1a1a1a; }
+  .theory-tab { padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 600; color: #555; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 0.08em; transition: color 0.15s; font-family: 'IBM Plex Mono', monospace; background: none; border-top: none; border-left: none; border-right: none; }
+  .theory-tab:hover { color: #aaa; }
+  .theory-tab.active { color: #5cdb7f; border-bottom-color: #5cdb7f; }
+  .theory-panel { display: none; padding: 1.5rem 0; }
+  .theory-panel.active { display: block; }
+  .theory-panel p { font-size: 0.8rem; color: #aaa; margin-bottom: 0.75rem; }
+  .theory-panel p:last-child { margin-bottom: 0; }
+  .theory-panel strong { color: #ddd; }
+  .theory-panel .quote { padding-left: 1rem; border-left: 2px solid #333; color: #888; font-style: italic; margin: 0.75rem 0; }
+  .theory-panel ul { margin: 0.5rem 0 0.75rem 1.25rem; font-size: 0.8rem; color: #999; }
+  .theory-panel li { margin-bottom: 0.3rem; }
+  .theory-panel code { background: #151515; padding: 0.1rem 0.35rem; font-size: 0.75rem; color: #db9f5c; }
+
+  /* Sections */
+  .section { margin-top: 2rem; }
+  .section h2 { font-size: 0.75rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #1a1a1a; }
 
   /* Lifecycle */
-  .lifecycle { display: flex; gap: 0; align-items: stretch; flex-wrap: wrap; margin-bottom: 1rem; }
-  .lifecycle-step { flex: 1; min-width: 120px; padding: 0.75rem; background: #111; border: 1px solid #222; position: relative; }
-  .lifecycle-step:first-child { border-radius: 8px 0 0 8px; }
-  .lifecycle-step:last-child { border-radius: 0 8px 8px 0; }
-  .lifecycle-step .num { color: #5cdb7f; font-weight: 700; font-size: 0.75rem; }
-  .lifecycle-step .label { font-size: 0.8rem; font-weight: 600; color: #fff; }
-  .lifecycle-step .desc { font-size: 0.7rem; color: #888; margin-top: 0.25rem; }
-  .lifecycle-step::after { content: ""; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 6px solid #333; z-index: 1; }
+  .lifecycle { display: flex; gap: 0; align-items: stretch; flex-wrap: wrap; }
+  .lifecycle-step { flex: 1; min-width: 110px; padding: 0.6rem 0.5rem; background: #0e0e0e; border: 1px solid #1a1a1a; position: relative; }
+  .lifecycle-step .num { color: #5cdb7f; font-weight: 700; font-size: 0.65rem; }
+  .lifecycle-step .label { font-size: 0.7rem; font-weight: 600; color: #ddd; }
+  .lifecycle-step .desc { font-size: 0.6rem; color: #666; margin-top: 0.15rem; }
+  .lifecycle-step::after { content: ">"; position: absolute; right: -4px; top: 50%; transform: translateY(-50%); color: #333; font-size: 0.7rem; z-index: 1; }
   .lifecycle-step:last-child::after { display: none; }
 
   /* Cards */
-  .card { background: #111; border: 1px solid #222; border-radius: 10px; margin-bottom: 1rem; overflow: hidden; }
-  .card-header { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1a1a; }
-  .card-header h3 { font-size: 0.95rem; font-weight: 600; color: #fff; }
-  .card-body { padding: 1.25rem; }
+  .card { background: #0e0e0e; border: 1px solid #1a1a1a; margin-bottom: 0.75rem; overflow: hidden; }
+  .card-header { padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #151515; }
+  .card-header h3 { font-size: 0.8rem; font-weight: 600; color: #ddd; }
+  .card-body { padding: 1rem; }
 
-  .badge { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
-  .badge-green { background: #1a3a2a; color: #5cdb7f; }
-  .badge-red { background: #3a1a1a; color: #db5c5c; }
-  .badge-blue { background: #1a2a3a; color: #5c9fdb; }
-  .badge-purple { background: #2a1a3a; color: #9f5cdb; }
-  .badge-yellow { background: #3a3a1a; color: #dbdb5c; }
+  /* Badges */
+  .badge { padding: 0.1rem 0.4rem; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid; }
+  .badge-green { border-color: #2d7a4f; color: #5cdb7f; }
+  .badge-red { border-color: #7a2d2d; color: #db5c5c; }
+  .badge-blue { border-color: #2d4a7a; color: #5c9fdb; }
+  .badge-purple { border-color: #4a2d7a; color: #9f5cdb; }
+  .badge-yellow { border-color: #7a7a2d; color: #dbdb5c; }
 
   /* Tables */
-  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  th { text-align: left; padding: 0.5rem 0.75rem; color: #888; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #222; }
-  td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #1a1a1a; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+  th { text-align: left; padding: 0.4rem 0.6rem; color: #555; font-weight: 600; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid #1a1a1a; }
+  td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #111; }
   tr:last-child td { border-bottom: none; }
 
   /* Links */
   a { color: #5c9fdb; text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  a:hover { color: #8fbfe8; }
 
-  /* Stat grid */
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-  .stat { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1rem; }
-  .stat .value { font-size: 1.5rem; font-weight: 700; color: #fff; }
-  .stat .label { font-size: 0.75rem; color: #888; margin-top: 0.25rem; }
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; }
+  .stat { background: #0e0e0e; border: 1px solid #1a1a1a; padding: 0.75rem; }
+  .stat .value { font-size: 1.25rem; font-weight: 700; color: #fff; }
+  .stat .label { font-size: 0.65rem; color: #666; margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
   .stat.positive .value { color: #5cdb7f; }
   .stat.negative .value { color: #db5c5c; }
   .stat.neutral .value { color: #5c9fdb; }
 
-  /* Eval comparison */
-  .eval-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
-  .eval-side { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 6px; padding: 1rem; }
-  .eval-side h4 { font-size: 0.8rem; color: #888; margin-bottom: 0.5rem; }
-  .eval-side .scores { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
-  .eval-side .score { font-size: 0.75rem; }
-  .eval-side .score span { font-weight: 700; color: #fff; }
-
-  /* Tx trail */
+  /* Trail */
   .trail { position: relative; padding-left: 1.5rem; }
-  .trail::before { content: ""; position: absolute; left: 0.5rem; top: 0; bottom: 0; width: 2px; background: #222; }
-  .trail-item { position: relative; margin-bottom: 1.25rem; }
-  .trail-item::before { content: ""; position: absolute; left: -1.25rem; top: 0.5rem; width: 10px; height: 10px; border-radius: 50%; background: #5cdb7f; border: 2px solid #0a0a0a; }
-  .trail-item .trail-label { font-size: 0.75rem; color: #888; }
-  .trail-item .trail-hash { font-family: 'SF Mono', Menlo, monospace; font-size: 0.8rem; }
+  .trail::before { content: ""; position: absolute; left: 0.45rem; top: 0; bottom: 0; width: 1px; background: #222; }
+  .trail-item { position: relative; margin-bottom: 1rem; }
+  .trail-item::before { content: ""; position: absolute; left: -1.3rem; top: 0.4rem; width: 8px; height: 8px; background: #5cdb7f; }
+  .trail-item .trail-label { font-size: 0.65rem; color: #666; text-transform: uppercase; letter-spacing: 0.05em; }
+  .trail-item .trail-hash { font-size: 0.75rem; }
+  .dim { color: #555; font-size: 0.7rem; }
 
-  .mono { font-family: 'SF Mono', Menlo, monospace; font-size: 0.8rem; }
-  .dim { color: #666; }
+  .mono { font-size: 0.75rem; }
 
-  footer { border-top: 1px solid #1a1a1a; padding-top: 1.5rem; margin-top: 2rem; color: #555; font-size: 0.8rem; }
+  footer { border-top: 1px solid #1a1a1a; padding-top: 1.5rem; margin-top: 2.5rem; color: #444; font-size: 0.7rem; }
 </style>
 </head>
 <body>
 <div class="container">
 
 <header>
-  <h1>Synthesis Explorer</h1>
-  <p>AI agents make mistakes. When humans correct them, those corrections are valuable. Synthesis lets operators share corrections with each other, tracked on-chain with ERC-8004 identity and reputation.</p>
-  <div class="subtitle">Deployed on Base mainnet with canonical ERC-8004 registries</div>
+  <h1>Astrolabe</h1>
+  <p>AI agents make mistakes. When humans correct them, those corrections are valuable. Astrolabe lets operators share corrections with each other, tracked on-chain with ERC-8004 identity and reputation.</p>
+  <span class="tag">Base mainnet + canonical ERC-8004</span>
 </header>
+
+<!-- Theory tabs -->
+<div class="theory">
+  <div class="theory-tabs">
+    <button class="theory-tab active" onclick="showTab('rl')">RL after training</button>
+    <button class="theory-tab" onclick="showTab('open')">Open systems</button>
+    <button class="theory-tab" onclick="showTab('ratio')">Ratio economy</button>
+    <button class="theory-tab" onclick="showTab('liberate')">Liberating memory</button>
+  </div>
+
+  <div class="theory-panel active" id="tab-rl">
+    <p>Reinforcement learning from human feedback (RLHF) is how frontier models improve: humans rank outputs, those preferences update model weights, the model gets better. The core pattern is simple — <strong>correction signal in, improved behavior out</strong>.</p>
+    <p>That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this empirically: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
+    <p>The correction signal that frontier labs capture internally through millions of user conversations can also be captured externally, by operators, and applied at the context layer. The correction is the same data; the application mechanism is different.</p>
+  </div>
+
+  <div class="theory-panel" id="tab-open">
+    <p>Frontier labs have a closed loop that open-source can't replicate:</p>
+    <p class="quote">User interactions > corrections > RLHF > better model > more users > more corrections</p>
+    <p>This flywheel is proprietary. Anthropic's correction data from millions of Claude conversations is arguably more valuable than the base training data. Open-source models match base capabilities but can't match this correction loop because they don't operate the user-facing product.</p>
+    <p>Synthesis creates a <strong>public correction layer</strong>. Corrections from any operator, using any model, flow into a shared pool with on-chain attribution. An open-source agent running Llama can borrow corrections that a Claude operator generated. The protocol is model-agnostic and lab-agnostic.</p>
+    <p>This doesn't replace RLHF — some improvements fundamentally require weight updates. But for domain expertise gaps, inference-time correction is surprisingly effective, and a public correction pool gives every agent access to signal that was previously locked inside frontier lab pipelines.</p>
+  </div>
+
+  <div class="theory-panel" id="tab-ratio">
+    <p>The credit system draws from what actually worked in peer-to-peer networks like What.CD and Karagarga — communities that solved the free-rider problem without financialization.</p>
+    <p>In those systems, your <strong>ratio</strong> (upload / download) determined your standing. Good ratio meant more access, higher trust, invitation privileges. Bad ratio meant restrictions. Nobody paid money — they contributed bandwidth. The system was self-regulating.</p>
+    <p>Synthesis applies the same model to agent corrections:</p>
+    <ul>
+      <li><strong>Contribute corrections</strong> > your balance goes up > larger credit line > you can borrow more</li>
+      <li><strong>Only borrow</strong> > balance goes negative > credit line restricts > you need to contribute back</li>
+      <li><strong>Reputation from measured deltas</strong> > high-quality contributors get extended credit, like trusted uploaders getting ratio bonuses</li>
+    </ul>
+    <p>The key insight: the ratio isn't a price, it's a <strong>social contract</strong>. It says "I participate in this commons." Credits are a measure of reciprocity, not a currency to accumulate.</p>
+  </div>
+
+  <div class="theory-panel" id="tab-liberate">
+    <p>Every agent system generates memory. Claude Code writes feedback files. Codex captures steering events. Cursor has shadow workspaces. Windsurf has flows. Karpathy's autoresearch showed that <code>program.md</code> — the accumulated human corrections — is the most valuable artifact in an autonomous research loop.</p>
+    <p>All of this expertise is local. It lives on one machine, shaped by one operator, invisible to everyone else. There is no mechanism to share it, discover it, or compensate the person who developed it.</p>
+    <p>We surveyed every major open-source agent memory project (A-Mem, MemOS, Acontext, Mem0, Letta). <strong>None of them publish actual memory content.</strong> Memory is treated as ephemeral and private — generated at runtime, never persisted as a shareable artifact.</p>
+    <p>Why would an operator share corrections that cost them time and expertise to produce? The credit system answers this — contributing corrections earns you access to other operators' corrections. Combined with on-chain attribution (your ERC-8004 identity is permanently linked to the corrections you contributed), there's both a practical incentive and a reputational one.</p>
+  </div>
+</div>
 
 <!-- Lifecycle -->
 <div class="section">
   <h2>Protocol lifecycle</h2>
   <div class="lifecycle">
-    <div class="lifecycle-step"><div class="num">1</div><div class="label">Extract</div><div class="desc">Pull corrections from agent memory</div></div>
-    <div class="lifecycle-step"><div class="num">2</div><div class="label">Sanitize</div><div class="desc">Strip PII, human reviews</div></div>
-    <div class="lifecycle-step"><div class="num">3</div><div class="label">Publish</div><div class="desc">Hash + metadata on-chain</div></div>
-    <div class="lifecycle-step"><div class="num">4</div><div class="label">Discover</div><div class="desc">Browse by domain</div></div>
-    <div class="lifecycle-step"><div class="num">5</div><div class="label">Borrow</div><div class="desc">Verify hash, credit deducted</div></div>
-    <div class="lifecycle-step"><div class="num">6</div><div class="label">Evaluate</div><div class="desc">A/B test: baseline vs augmented</div></div>
-    <div class="lifecycle-step"><div class="num">7</div><div class="label">Reputation</div><div class="desc">Delta feeds ERC-8004</div></div>
+    <div class="lifecycle-step"><div class="num">01</div><div class="label">Extract</div><div class="desc">Pull corrections from agent memory</div></div>
+    <div class="lifecycle-step"><div class="num">02</div><div class="label">Sanitize</div><div class="desc">Strip PII, human reviews</div></div>
+    <div class="lifecycle-step"><div class="num">03</div><div class="label">Publish</div><div class="desc">Hash + metadata on-chain</div></div>
+    <div class="lifecycle-step"><div class="num">04</div><div class="label">Discover</div><div class="desc">Browse by domain</div></div>
+    <div class="lifecycle-step"><div class="num">05</div><div class="label">Borrow</div><div class="desc">Verify hash, credit deducted</div></div>
+    <div class="lifecycle-step"><div class="num">06</div><div class="label">Evaluate</div><div class="desc">A/B: baseline vs augmented</div></div>
+    <div class="lifecycle-step"><div class="num">07</div><div class="label">Reputation</div><div class="desc">Delta feeds ERC-8004</div></div>
   </div>
 </div>
 
@@ -111,10 +164,10 @@
   <h2>System state</h2>
   <div class="stats">
     <div class="stat neutral"><div class="value">4</div><div class="label">Fragments published</div></div>
-    <div class="stat neutral"><div class="value">2</div><div class="label">Operators registered</div></div>
-    <div class="stat neutral"><div class="value">2</div><div class="label">Domains active</div></div>
-    <div class="stat positive"><div class="value">+1.7</div><div class="label">Aquaculture avg delta</div></div>
-    <div class="stat negative"><div class="value">-0.9</div><div class="label">SaaS eng avg delta</div></div>
+    <div class="stat neutral"><div class="value">2</div><div class="label">Operators</div></div>
+    <div class="stat neutral"><div class="value">2</div><div class="label">Domains</div></div>
+    <div class="stat positive"><div class="value">+1.7</div><div class="label">Aquaculture delta</div></div>
+    <div class="stat negative"><div class="value">-0.9</div><div class="label">SaaS eng delta</div></div>
   </div>
 </div>
 
@@ -124,42 +177,12 @@
   <div class="card">
     <div class="card-body">
       <table>
-        <thead>
-          <tr><th>#</th><th>Domain</th><th>Price</th><th>Operator</th><th>Type</th><th>Content</th></tr>
-        </thead>
+        <thead><tr><th>#</th><th>Domain</th><th>Price</th><th>Operator</th><th>Type</th><th>Content</th></tr></thead>
         <tbody>
-          <tr>
-            <td>0</td>
-            <td><span class="badge badge-blue">saas-engineering</span></td>
-            <td>1 credit</td>
-            <td>Operator #1</td>
-            <td><span class="badge badge-purple">feedback</span></td>
-            <td>Production logging at API boundaries is a launch prerequisite</td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td><span class="badge badge-blue">saas-engineering</span></td>
-            <td>2 credits</td>
-            <td>Operator #1</td>
-            <td><span class="badge badge-purple">feedback</span></td>
-            <td>Platform-generated spam during testing is not a code bug</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td><span class="badge badge-blue">saas-engineering</span></td>
-            <td>2 credits</td>
-            <td>Operator #1</td>
-            <td><span class="badge badge-purple">feedback</span></td>
-            <td>Verify service state from environment config, not assumptions</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td><span class="badge badge-blue">saas-engineering</span></td>
-            <td>3 credits</td>
-            <td>Operator #1</td>
-            <td><span class="badge badge-purple">feedback</span></td>
-            <td>Automated ad creative pipeline beats manual tools</td>
-          </tr>
+          <tr><td>0</td><td><span class="badge badge-blue">saas-eng</span></td><td>1 cr</td><td>#1</td><td><span class="badge badge-purple">feedback</span></td><td>Production logging at API boundaries is a launch prerequisite</td></tr>
+          <tr><td>1</td><td><span class="badge badge-blue">saas-eng</span></td><td>2 cr</td><td>#1</td><td><span class="badge badge-purple">feedback</span></td><td>Platform-generated spam during testing is not a code bug</td></tr>
+          <tr><td>2</td><td><span class="badge badge-blue">saas-eng</span></td><td>2 cr</td><td>#1</td><td><span class="badge badge-purple">feedback</span></td><td>Verify service state from environment config, not assumptions</td></tr>
+          <tr><td>3</td><td><span class="badge badge-blue">saas-eng</span></td><td>3 cr</td><td>#1</td><td><span class="badge badge-purple">feedback</span></td><td>Automated ad creative pipeline beats manual tools</td></tr>
         </tbody>
       </table>
     </div>
@@ -171,45 +194,39 @@
   <h2>Operators</h2>
   <div class="stats">
     <div class="stat">
-      <div class="value">Operator #1</div>
+      <div class="value" style="font-size:1rem">Operator #1</div>
       <div class="label">Contributor — Agent #35279 (ERC-8004)</div>
-      <div class="label" style="margin-top:0.5rem">Balance: +3 credits | Published: 4 fragments</div>
+      <div class="label" style="margin-top:0.4rem; color:#5cdb7f">Balance: +3 credits | Published: 4 fragments</div>
     </div>
     <div class="stat">
-      <div class="value">Operator #2</div>
+      <div class="value" style="font-size:1rem">Operator #2</div>
       <div class="label">Borrower — Agent #35280 (ERC-8004)</div>
-      <div class="label" style="margin-top:0.5rem">Balance: -10 credits | Credit line: 15</div>
+      <div class="label" style="margin-top:0.4rem; color:#db5c5c">Balance: -10 credits | Credit line: 15</div>
     </div>
   </div>
 </div>
 
-<!-- Eval results -->
+<!-- Eval -->
 <div class="section">
   <h2>Evaluation results</h2>
 
   <div class="card">
-    <div class="card-header">
-      <h3>Aquaculture domain</h3>
-      <span class="badge badge-green">+1.7 avg delta</span>
-    </div>
+    <div class="card-header"><h3>Aquaculture</h3><span class="badge badge-green">+1.7 avg</span></div>
     <div class="card-body">
       <table>
         <thead><tr><th>Task</th><th>Baseline</th><th>Augmented</th><th>Delta</th></tr></thead>
         <tbody>
-          <tr><td>Tilapia disease surveillance</td><td>6.3</td><td>8.7</td><td class="positive" style="color:#5cdb7f">+2.3</td></tr>
-          <tr><td>FCR literature review</td><td>7.0</td><td>8.7</td><td class="positive" style="color:#5cdb7f">+1.7</td></tr>
-          <tr><td>Carp breeding priorities</td><td>6.7</td><td>8.7</td><td class="positive" style="color:#5cdb7f">+2.0</td></tr>
+          <tr><td>Tilapia disease surveillance</td><td>6.3</td><td>8.7</td><td style="color:#5cdb7f">+2.3</td></tr>
+          <tr><td>FCR literature review</td><td>7.0</td><td>8.7</td><td style="color:#5cdb7f">+1.7</td></tr>
+          <tr><td>Carp breeding priorities</td><td>6.7</td><td>8.7</td><td style="color:#5cdb7f">+2.0</td></tr>
         </tbody>
       </table>
-      <p style="margin-top:0.75rem; font-size:0.8rem; color:#888">Fragments provided domain expertise the model lacked — specific pathogen priorities, FCR normalization methodology, and Indian carp breeding program constraints.</p>
+      <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Corrections provided domain expertise the model lacked — specific pathogen priorities, normalization methodology, and breeding program constraints.</p>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-header">
-      <h3>SaaS engineering domain</h3>
-      <span class="badge badge-red">-0.9 avg delta</span>
-    </div>
+    <div class="card-header"><h3>SaaS engineering</h3><span class="badge badge-red">-0.9 avg</span></div>
     <div class="card-body">
       <table>
         <thead><tr><th>Task</th><th>Baseline</th><th>Augmented</th><th>Delta</th></tr></thead>
@@ -219,21 +236,18 @@
           <tr><td>Service integration verification</td><td>9.0</td><td>5.7</td><td style="color:#db5c5c">-3.3</td></tr>
         </tbody>
       </table>
-      <p style="margin-top:0.75rem; font-size:0.8rem; color:#888">Mixed results. The baseline was already strong for SaaS tasks. One task regressed because the correction fragments added noise to an already-good response. The system correctly submitted a low reputation score (4/10) for this domain.</p>
+      <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Mixed. Baseline was already strong. One task regressed — corrections added noise. System correctly submitted 4/10 reputation.</p>
     </div>
   </div>
 </div>
 
-<!-- On-chain trail -->
+<!-- Trail -->
 <div class="section">
   <h2>On-chain trail</h2>
-  <p style="font-size:0.85rem; color:#888; margin-bottom:1rem;">Every step is verifiable on Basescan. Click any transaction to inspect it.</p>
+  <p style="font-size:0.7rem; color:#555; margin-bottom:1rem;">Every step is verifiable on Basescan.</p>
 
   <div class="card">
-    <div class="card-header">
-      <h3>Fragment #0 — complete lifecycle</h3>
-      <span class="badge badge-green">verified</span>
-    </div>
+    <div class="card-header"><h3>Fragment #0 — full lifecycle</h3><span class="badge badge-green">verified</span></div>
     <div class="card-body">
       <div class="trail">
         <div class="trail-item">
@@ -249,72 +263,14 @@
         <div class="trail-item">
           <div class="trail-label">Fragment borrowed</div>
           <div class="trail-hash"><a href="https://basescan.org/tx/0xa84aad261b9c31eb7b7ca89cbe759df6d3ff348774715f68fd07f5143180a372" target="_blank">0xa84aad...a372</a></div>
-          <div class="dim">borrower operator: #2 | credit deducted: 1 | hash verified before borrow</div>
+          <div class="dim">borrower: #2 | credit deducted: 1 | hash verified before borrow</div>
         </div>
         <div class="trail-item">
           <div class="trail-label">Reputation feedback submitted</div>
           <div class="trail-hash"><a href="https://basescan.org/tx/0x1cfdf9708c14bcce1224dd674c18707deaeebd92edc378bcd6e78472af8ae2ed" target="_blank">0x1cfdf9...2ed</a></div>
-          <div class="dim">score: 4/10 | tag: memory-lend / saas-engineering | via canonical ERC-8004 Reputation Registry</div>
+          <div class="dim">score: 4/10 | tag: memory-lend / saas-engineering | canonical ERC-8004 Reputation</div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Theory -->
-<div class="section">
-  <h2>Why this matters</h2>
-
-  <div class="card">
-    <div class="card-header">
-      <h3>RL patterns work after training too</h3>
-    </div>
-    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
-      <p>Reinforcement learning from human feedback (RLHF) is how frontier models improve: humans rank outputs, those preferences update model weights, the model gets better. The core pattern is simple — <strong>correction signal in, improved behavior out</strong>.</p>
-      <p style="margin-top:0.75rem;">That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this empirically: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
-      <p style="margin-top:0.75rem;">This means the correction signal that frontier labs capture internally through millions of user conversations can also be captured externally, by operators, and applied at the context layer. The correction is the same data; the application mechanism is different.</p>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h3>Helping open systems compete</h3>
-    </div>
-    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
-      <p>Frontier labs have a closed loop that open-source can't replicate:</p>
-      <p style="margin-top:0.5rem; padding-left:1rem; border-left:2px solid #333; color:#aaa; font-style:italic;">User interactions → corrections → RLHF → better model → more users → more corrections</p>
-      <p style="margin-top:0.75rem;">This flywheel is proprietary. Anthropic's correction data from millions of Claude conversations is arguably more valuable than the base training data. Open-source models match base capabilities but can't match this correction loop because they don't operate the user-facing product.</p>
-      <p style="margin-top:0.75rem;">Synthesis creates a <strong>public correction layer</strong>. Corrections from any operator, using any model, flow into a shared pool with on-chain attribution. An open-source agent running Llama can borrow corrections that a Claude operator generated. The protocol is model-agnostic and lab-agnostic. No single entity controls the correction commons.</p>
-      <p style="margin-top:0.75rem;">This doesn't replace RLHF — some improvements fundamentally require weight updates. But for domain expertise gaps, inference-time correction is surprisingly effective, and a public correction pool gives every agent access to signal that was previously locked inside frontier lab pipelines.</p>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h3>The ratio economy: lessons from private trackers</h3>
-    </div>
-    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
-      <p>The credit system draws from what actually worked in peer-to-peer file sharing networks like What.CD and Karagarga — communities that solved the free-rider problem without financialization.</p>
-      <p style="margin-top:0.75rem;">In those systems, your <strong>ratio</strong> (upload / download) determined your standing. Good ratio meant more access, higher trust, invitation privileges. Bad ratio meant restrictions. Nobody paid money — they contributed bandwidth. The system was self-regulating: generous participants got more out of it, free-riders gradually lost access.</p>
-      <p style="margin-top:0.75rem;">Synthesis applies the same model to agent corrections:</p>
-      <ul style="margin-top:0.5rem; margin-left:1.25rem; color:#aaa;">
-        <li style="margin-bottom:0.3rem"><strong>Contribute corrections</strong> → your balance goes up → larger credit line → you can borrow more</li>
-        <li style="margin-bottom:0.3rem"><strong>Only borrow</strong> → balance goes negative → credit line restricts → you need to contribute back</li>
-        <li style="margin-bottom:0.3rem"><strong>Reputation from measured deltas</strong> → high-quality contributors get extended credit, like trusted uploaders getting ratio bonuses</li>
-      </ul>
-      <p style="margin-top:0.75rem;">The key insight from those communities: the ratio isn't a price, it's a <strong>social contract</strong>. It says "I participate in this commons." Credits in Synthesis work the same way — they're not a currency to accumulate, they're a measure of reciprocity.</p>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h3>Liberating memory</h3>
-    </div>
-    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
-      <p>Every agent system generates memory. Claude Code writes feedback files. Codex captures steering events. Cursor has shadow workspaces. Windsurf has flows. Karpathy's autoresearch showed that <code>program.md</code> — the accumulated human corrections — is the most valuable artifact in an autonomous research loop.</p>
-      <p style="margin-top:0.75rem;">All of this expertise is local. It lives on one machine, shaped by one operator, invisible to everyone else. There is no mechanism to share it, discover it, or compensate the person who developed it.</p>
-      <p style="margin-top:0.75rem;">We surveyed every major open-source agent memory project (A-Mem, MemOS, Acontext, Mem0, Letta). <strong>None of them publish actual memory content.</strong> Memory is treated as ephemeral and private — generated at runtime, never persisted as a shareable artifact. The infrastructure exists; the sharing doesn't.</p>
-      <p style="margin-top:0.75rem;">The incentive problem is real: why would an operator share corrections that cost them time and expertise to produce? The credit system answers this — contributing corrections earns you access to other operators' corrections. The more you give, the more you can take. Combined with on-chain attribution (your ERC-8004 identity is permanently linked to the corrections you contributed), there's both a practical incentive (credit) and a reputational one (provenance).</p>
     </div>
   </div>
 </div>
@@ -338,10 +294,19 @@
 </div>
 
 <footer>
-  <p>Synthesis hackathon project. All data on Base mainnet. <a href="https://github.com/ainsleys/synthesis">Source code</a></p>
-  <p style="margin-top:0.25rem">Corrections are public goods with attribution. Content is readable before payment. Credits compensate labor, not access.</p>
+  <p>Astrolabe — a course-correction instrument for agents. All data on Base mainnet. <a href="https://github.com/ainsleys/synthesis">Source</a></p>
+  <p style="margin-top:0.25rem">Corrections are public goods with attribution. Credits compensate labor, not access.</p>
 </footer>
 
 </div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.theory-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.theory-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${id}')"]`).classList.add('active');
+  document.getElementById(`tab-${id}`).classList.add('active');
+}
+</script>
 </body>
 </html>
