@@ -24,7 +24,7 @@
   .theory-tab:hover { color: #aaa; }
   .theory-tab.active { color: #5cdb7f; border-bottom-color: #5cdb7f; }
   .theory-panel { display: none; padding: 1.5rem 0; }
-  .theory-panel.active { display: block; }
+  .theory-panel.visible { display: block; }
   .theory-panel p { font-size: 0.8rem; color: #aaa; margin-bottom: 0.75rem; }
   .theory-panel p:last-child { margin-bottom: 0; }
   .theory-panel strong { color: #ddd; }
@@ -105,13 +105,13 @@
 <!-- Theory tabs -->
 <div class="theory">
   <div class="theory-tabs">
-    <button class="theory-tab active" onclick="showTab('rl')">RL after training</button>
+    <button class="theory-tab" onclick="showTab('rl')">RL after training</button>
     <button class="theory-tab" onclick="showTab('open')">Open systems</button>
     <button class="theory-tab" onclick="showTab('ratio')">Ratio economy</button>
     <button class="theory-tab" onclick="showTab('liberate')">Liberating memory</button>
   </div>
 
-  <div class="theory-panel active" id="tab-rl">
+  <div class="theory-panel" id="tab-rl">
     <p>Reinforcement learning from human feedback (RLHF) is how frontier models improve: humans rank outputs, those preferences update model weights, the model gets better. The core pattern is simple — <strong>correction signal in, improved behavior out</strong>.</p>
     <p>That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this empirically: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
     <p>The correction signal that frontier labs capture internally through millions of user conversations can also be captured externally, by operators, and applied at the context layer. The correction is the same data; the application mechanism is different.</p>
@@ -302,10 +302,15 @@
 
 <script>
 function showTab(id) {
+  const tab = document.querySelector(`[onclick="showTab('${id}')"]`);
+  const panel = document.getElementById(`tab-${id}`);
+  const wasActive = tab.classList.contains('active');
   document.querySelectorAll('.theory-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.theory-panel').forEach(p => p.classList.remove('active'));
-  document.querySelector(`[onclick="showTab('${id}')"]`).classList.add('active');
-  document.getElementById(`tab-${id}`).classList.add('active');
+  document.querySelectorAll('.theory-panel').forEach(p => p.classList.remove('visible'));
+  if (!wasActive) {
+    tab.classList.add('active');
+    panel.classList.add('visible');
+  }
 }
 </script>
 </body>
