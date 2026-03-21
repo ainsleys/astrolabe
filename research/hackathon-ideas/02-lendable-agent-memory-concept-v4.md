@@ -180,6 +180,65 @@ The delta — the before/after — is the demo. Everything else is plumbing.
 
 ---
 
+## Compute commitment models (future directions)
+
+The v0 demo uses ETH micropayments, but the more natural unit of exchange between agents is compute, not currency. Agents don't naturally have ETH — they have access to tokens and domain expertise. Three models were considered, in order of complexity:
+
+### Model 1: Reputation-as-ledger (v0 — implemented)
+
+No explicit commitment mechanism. The on-chain record of borrow events and publish events creates a natural ledger per agent identity: how many corrections has this identity contributed vs. borrowed? The ratio is a reputation signal. Net contributors have strong reputations. Net consumers have weak ones. No commitment lifecycle, no fulfillment tracking, no timeouts.
+
+This works for ephemeral agents (Claude Code sessions, Cursor tabs, autoresearch runs) because the commitment attaches to the persistent ERC-8004 identity, not to any running process. Sessions come and go; the identity's borrow/contribute ratio persists.
+
+### Model 2: Bilateral compute commitments (v1)
+
+When Agent A borrows corrections from Agent B, the "payment" is a recorded obligation: Agent A commits N tokens of reciprocal work for Agent B. The contract tracks commitment lifecycle:
+
+```
+struct Commitment {
+    uint256 fragmentId;
+    uint256 borrowerAgentId;
+    uint256 contributorAgentId;
+    uint256 tokenAmount;        // committed reciprocal tokens
+    uint256 deadline;
+    bytes32 taskHash;           // set by contributor when posting task
+    bytes32 resultHash;         // set by borrower when fulfilling
+    bool    fulfilled;
+}
+```
+
+Flow: borrow → commitment recorded → contributor posts task → borrower does work (off-chain LLM call) → submits result hash → contributor accepts → commitment settled.
+
+**Fulfillment verification (v1):** Bilateral — contributor evaluates and accepts/rejects. Future: eval harness scores fulfillment quality, multi-agent judge panels, staked disputes.
+
+**Pricing (v1):** Contributor sets token price when publishing. Market discovers fair rates over time. Future: domain-specific exchange rates from historical transaction data.
+
+**Liveness (v1):** Deadline on every commitment. Expiry → reputation penalty via giveFeedback with "commitment-expired" tag. Future: ETH bond that slashes on timeout, commitment delegation to other agents.
+
+**Authorization (v1):** Config-level max commitment budget (`MAX_TOKEN_COMMITMENT` in .env). Future: on-chain commitment caps per agent ID, ERC-7715-style session permissions.
+
+Key limitation: assumes persistent agents that live long enough to fulfill commitments. Ephemeral agents need the identity-level abstraction — the commitment is against the ERC-8004 identity, not the running process, so any future session under that identity can fulfill.
+
+### Model 3: Domain compute pools (v2)
+
+Instead of bilateral obligations, borrowers contribute to shared domain pools. Borrowing an aquaculture correction commits tokens to the "aquaculture pool." Any contributor in that domain can draw from the pool by posting tasks. Any agent operating under the borrower's identity can fulfill pool tasks.
+
+Advantages over bilateral:
+- No single counterparty waiting for fulfillment
+- Ephemeral agents can fulfill any pool task, not a specific bilateral commitment
+- Scales naturally — popular domains accumulate large pools, attracting more contributors
+- Solves the "what if I never need help from this specific contributor" problem
+
+This is the most interesting model but requires the most infrastructure: pool accounting, task matching, contribution tracking, fair distribution of pool resources to contributors.
+
+### Why this matters for the open-source ecosystem
+
+Frontier labs internalize correction signal through proprietary RLHF pipelines. The compute commitment model creates an alternative: agents trade expertise directly, denominated in work rather than money. An open-source agent that borrows aquaculture corrections and contributes SaaS corrections back is participating in a public correction economy that no single lab controls.
+
+The denomination in compute rather than currency is important because it means the system works without financialization. Agents don't need ETH balances or human-funded wallets. They just need the authorization to commit their operator's tokens — which is a natural extension of the spending scopes that operators already configure.
+
+---
+
 ## Open questions for after the hackathon
 
 1. **Aggregation**: individual corrections improve individual tasks. But 10,000 corrections from 500 contributors, filtered by reputation, could be a DPO training set for domain-specific improvement. This is the scale thesis, but it requires volume we don't have yet.
@@ -191,3 +250,7 @@ The delta — the before/after — is the demo. Everything else is plumbing.
 4. **Adversarial corrections**: a malicious contributor could publish corrections that subtly degrade performance. The eval harness catches this (negative delta → bad reputation), but only if borrowers actually run evals.
 
 5. **Privacy boundary**: the most valuable corrections come from the most sensitive work. Aggressive sanitization strips context that makes the correction useful. Where's the line? This is irreducible — no technical solution fully resolves it.
+
+6. **Compute commitment enforcement**: how do you verify that reciprocal work was actually useful? Bilateral acceptance is fragile. Eval harness on fulfillment results is more robust but adds cost. The right verification layer probably depends on the value of the commitment.
+
+7. **Cross-model correction transfer**: corrections from a Claude operator improve a Claude agent. Do they improve a Llama agent equally? The correction pattern is model-agnostic in theory, but the phrasing and assumptions may be model-specific in practice.
