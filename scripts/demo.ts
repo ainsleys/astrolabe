@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import { keccak256, toHex } from "viem";
 import { config, MEMORY_LENDING_ABI } from "./lib/config.js";
 import { getPublicClient, getBorrowerWallet } from "./lib/wallet.js";
+import { giveFeedback } from "./lib/erc8004.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BORROWS_DIR = join(__dirname, "..", "borrows");
@@ -33,13 +34,13 @@ async function main() {
   const fragmentId = BigInt(process.argv[2] || "0");
   const submitFeedback = process.argv.includes("--feedback");
 
-  heading("Synthesis Demo — Lendable Agent Memory on Base");
+  heading("Astrolabe Demo — Course Correction for Agents");
 
   console.log("Protocol: operators share corrections, tracked by a credit");
   console.log("system with on-chain receipts and ERC-8004 reputation.\n");
   console.log(`Fragment ID:    ${fragmentId}`);
   console.log(`Chain:          Base (canonical ERC-8004)`);
-  console.log(`Feedback:       ${submitFeedback ? "will submit on-chain" : "off (pass --feedback to enable)"}`);
+  console.log(`Feedback:       ${submitFeedback ? "will submit on-chain after eval" : "off (pass --feedback to enable)"}`);
 
   const publicClient = getPublicClient();
   const wallet = getBorrowerWallet();
@@ -108,18 +109,31 @@ async function main() {
     process.exit(1);
   }
 
-  // Check if already borrowed (receipt exists)
+  // Check if we have a valid cached receipt for this exact context
   mkdirSync(BORROWS_DIR, { recursive: true });
   const receiptPath = join(BORROWS_DIR, `fragment-${fragmentId}.json`);
-  let borrowTxHash: string;
-  let content: string;
+  let borrowTxHash: string = "";
+  let content: string = "";
 
+  let cachedValid = false;
   if (existsSync(receiptPath)) {
     const existing = JSON.parse(readFileSync(receiptPath, "utf-8"));
-    content = existing.content;
-    borrowTxHash = existing.borrowTxHash;
-    console.log(`Already borrowed (receipt exists). Tx: ${borrowTxHash}`);
-  } else {
+    // Validate receipt matches current contract, operator, and content hash
+    if (
+      existing.contentHash === fragment.contentHash &&
+      existing.borrowerOperatorId === config.borrowerOperatorId.toString() &&
+      existing.content
+    ) {
+      content = existing.content;
+      borrowTxHash = existing.borrowTxHash;
+      cachedValid = true;
+      console.log(`Valid cached receipt found. Tx: ${borrowTxHash}`);
+    } else {
+      console.log("Stale receipt found (contract/operator/hash mismatch). Re-borrowing.");
+    }
+  }
+
+  if (!cachedValid) {
     // Fetch and verify content
     console.log(`Fetching from ${fragment.contentURI}...`);
     const response = await fetch(fragment.contentURI);
@@ -285,6 +299,33 @@ Respond with ONLY this JSON:
         join(RESULTS_DIR, `demo-${task.id}.json`),
         JSON.stringify({ task, baseScores, augScores, delta, judge }, null, 2)
       );
+
+      // Submit reputation feedback if --feedback flag is set
+      if (submitFeedback) {
+        const rawScore = Math.round(5 + delta);
+        const clampedScore = Math.max(1, Math.min(10, rawScore));
+        const evidenceHash = keccak256(
+          toHex(JSON.stringify({ task: task.id, delta, baseAvg, augAvg }))
+        ) as `0x${string}`;
+
+        console.log(`\nSubmitting reputation feedback: ${clampedScore}/10`);
+        try {
+          const fbHash = await giveFeedback(
+            wallet,
+            config.contributorAgentId,
+            clampedScore,
+            "memory-lend",
+            fragment.domain,
+            "",
+            evidenceHash
+          );
+          const fbReceipt = await publicClient.waitForTransactionReceipt({ hash: fbHash });
+          console.log(`Feedback tx: ${fbHash}`);
+          console.log(`  ${CHAIN_EXPLORER}/${fbHash}`);
+        } catch (err) {
+          console.error("Failed to submit feedback:", err);
+        }
+      }
     }
   }
 
