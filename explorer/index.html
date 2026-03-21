@@ -18,20 +18,30 @@
   header .tag { display: inline-block; margin-top: 0.75rem; padding: 0.2rem 0.5rem; border: 1px solid #2d7a4f; color: #5cdb7f; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; }
 
   /* Theory tabs */
-  .theory { border-bottom: 1px solid #222; }
-  .theory-tabs { display: flex; border-bottom: 1px solid #1a1a1a; }
-  .theory-tab { padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 600; color: #555; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; letter-spacing: 0.08em; transition: color 0.15s; font-family: 'IBM Plex Mono', monospace; background: none; border-top: none; border-left: none; border-right: none; }
-  .theory-tab:hover { color: #aaa; }
-  .theory-tab.active { color: #5cdb7f; border-bottom-color: #5cdb7f; }
-  .theory-panel { display: none; padding: 1.5rem 0; }
-  .theory-panel.visible { display: block; }
-  .theory-panel p { font-size: 0.8rem; color: #aaa; margin-bottom: 0.75rem; }
-  .theory-panel p:last-child { margin-bottom: 0; }
-  .theory-panel strong { color: #ddd; }
-  .theory-panel .quote { padding-left: 1rem; border-left: 2px solid #333; color: #888; font-style: italic; margin: 0.75rem 0; }
-  .theory-panel ul { margin: 0.5rem 0 0.75rem 1.25rem; font-size: 0.8rem; color: #999; }
-  .theory-panel li { margin-bottom: 0.3rem; }
-  .theory-panel code { background: #151515; padding: 0.1rem 0.35rem; font-size: 0.75rem; color: #db9f5c; }
+  .theory { border-bottom: 1px solid #222; margin-top: 1.5rem; }
+  .theory-tabs { display: flex; gap: 0; }
+  .theory-tab { padding: 0.5rem 0.85rem; font-size: 0.65rem; font-weight: 600; color: #555; cursor: pointer; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.15s; font-family: 'IBM Plex Mono', monospace; background: none; border: 1px solid #1a1a1a; border-bottom: none; margin-bottom: -1px; position: relative; }
+  .theory-tab:hover { color: #aaa; background: #0e0e0e; }
+  .theory-tab.active { color: #5cdb7f; background: #0e0e0e; border-bottom-color: #0e0e0e; }
+  .theory-tab .arrow { display: inline-block; margin-left: 0.35rem; font-size: 0.55rem; transition: transform 0.15s; }
+  .theory-tab.active .arrow { transform: rotate(90deg); }
+  .theory-window { display: none; border: 1px solid #1a1a1a; border-top: none; background: #0e0e0e; }
+  .theory-window.visible { display: block; }
+  .theory-titlebar { padding: 0.35rem 0.75rem; background: #141414; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+  .theory-titlebar .dots { display: flex; gap: 0.35rem; }
+  .theory-titlebar .dot { width: 6px; height: 6px; background: #333; }
+  .theory-titlebar .title { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 0.1em; }
+  .theory-content { padding: 1rem; max-height: 280px; overflow-y: auto; }
+  .theory-content::-webkit-scrollbar { width: 4px; }
+  .theory-content::-webkit-scrollbar-track { background: #0e0e0e; }
+  .theory-content::-webkit-scrollbar-thumb { background: #333; }
+  .theory-content p { font-size: 0.78rem; color: #999; margin-bottom: 0.65rem; }
+  .theory-content p:last-child { margin-bottom: 0; }
+  .theory-content strong { color: #ccc; }
+  .theory-content .quote { padding-left: 0.75rem; border-left: 2px solid #2a2a2a; color: #777; font-style: italic; margin: 0.65rem 0; }
+  .theory-content ul { margin: 0.4rem 0 0.65rem 1.25rem; font-size: 0.78rem; color: #888; }
+  .theory-content li { margin-bottom: 0.25rem; }
+  .theory-content code { background: #1a1a1a; padding: 0.1rem 0.3rem; font-size: 0.72rem; color: #db9f5c; }
 
   /* Sections */
   .section { margin-top: 2rem; }
@@ -105,43 +115,67 @@
 <!-- Theory tabs -->
 <div class="theory">
   <div class="theory-tabs">
-    <button class="theory-tab" onclick="showTab('rl')">RL after training</button>
-    <button class="theory-tab" onclick="showTab('open')">Open systems</button>
-    <button class="theory-tab" onclick="showTab('ratio')">Ratio economy</button>
-    <button class="theory-tab" onclick="showTab('liberate')">Liberating memory</button>
+    <button class="theory-tab" onclick="showTab('rl')">RL after training <span class="arrow">></span></button>
+    <button class="theory-tab" onclick="showTab('open')">Open systems <span class="arrow">></span></button>
+    <button class="theory-tab" onclick="showTab('ratio')">Ratio economy <span class="arrow">></span></button>
+    <button class="theory-tab" onclick="showTab('liberate')">Liberating memory <span class="arrow">></span></button>
   </div>
 
-  <div class="theory-panel" id="tab-rl">
+  <div class="theory-window" id="win-rl">
+    <div class="theory-titlebar">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="title">theory/rl-after-training</div>
+    </div>
+    <div class="theory-content" id="tab-rl">
     <p>Reinforcement learning from human feedback (RLHF) is how frontier models improve: humans rank outputs, those preferences update model weights, the model gets better. The core pattern is simple — <strong>correction signal in, improved behavior out</strong>.</p>
     <p>That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this empirically: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
     <p>The correction signal that frontier labs capture internally through millions of user conversations can also be captured externally, by operators, and applied at the context layer. The correction is the same data; the application mechanism is different.</p>
+    </div>
   </div>
 
-  <div class="theory-panel" id="tab-open">
+  <div class="theory-window" id="win-open">
+    <div class="theory-titlebar">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="title">theory/open-systems</div>
+    </div>
+    <div class="theory-content" id="tab-open">
     <p>Frontier labs have a closed loop that open-source can't replicate:</p>
     <p class="quote">User interactions > corrections > RLHF > better model > more users > more corrections</p>
     <p>This flywheel is proprietary. Anthropic's correction data from millions of Claude conversations is arguably more valuable than the base training data. Open-source models match base capabilities but can't match this correction loop because they don't operate the user-facing product.</p>
-    <p>Synthesis creates a <strong>public correction layer</strong>. Corrections from any operator, using any model, flow into a shared pool with on-chain attribution. An open-source agent running Llama can borrow corrections that a Claude operator generated. The protocol is model-agnostic and lab-agnostic.</p>
+    <p>Astrolabe creates a <strong>public correction layer</strong>. Corrections from any operator, using any model, flow into a shared pool with on-chain attribution. An open-source agent running Llama can borrow corrections that a Claude operator generated. The protocol is model-agnostic and lab-agnostic.</p>
     <p>This doesn't replace RLHF — some improvements fundamentally require weight updates. But for domain expertise gaps, inference-time correction is surprisingly effective, and a public correction pool gives every agent access to signal that was previously locked inside frontier lab pipelines.</p>
+    </div>
   </div>
 
-  <div class="theory-panel" id="tab-ratio">
+  <div class="theory-window" id="win-ratio">
+    <div class="theory-titlebar">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="title">theory/ratio-economy</div>
+    </div>
+    <div class="theory-content" id="tab-ratio">
     <p>The credit system draws from what actually worked in peer-to-peer networks like What.CD and Karagarga — communities that solved the free-rider problem without financialization.</p>
     <p>In those systems, your <strong>ratio</strong> (upload / download) determined your standing. Good ratio meant more access, higher trust, invitation privileges. Bad ratio meant restrictions. Nobody paid money — they contributed bandwidth. The system was self-regulating.</p>
-    <p>Synthesis applies the same model to agent corrections:</p>
+    <p>Astrolabe applies the same model to agent corrections:</p>
     <ul>
       <li><strong>Contribute corrections</strong> > your balance goes up > larger credit line > you can borrow more</li>
       <li><strong>Only borrow</strong> > balance goes negative > credit line restricts > you need to contribute back</li>
       <li><strong>Reputation from measured deltas</strong> > high-quality contributors get extended credit, like trusted uploaders getting ratio bonuses</li>
     </ul>
     <p>The key insight: the ratio isn't a price, it's a <strong>social contract</strong>. It says "I participate in this commons." Credits are a measure of reciprocity, not a currency to accumulate.</p>
+    </div>
   </div>
 
-  <div class="theory-panel" id="tab-liberate">
+  <div class="theory-window" id="win-liberate">
+    <div class="theory-titlebar">
+      <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <div class="title">theory/liberating-memory</div>
+    </div>
+    <div class="theory-content" id="tab-liberate">
     <p>Every agent system generates memory. Claude Code writes feedback files. Codex captures steering events. Cursor has shadow workspaces. Windsurf has flows. Karpathy's autoresearch showed that <code>program.md</code> — the accumulated human corrections — is the most valuable artifact in an autonomous research loop.</p>
     <p>All of this expertise is local. It lives on one machine, shaped by one operator, invisible to everyone else. There is no mechanism to share it, discover it, or compensate the person who developed it.</p>
     <p>We surveyed every major open-source agent memory project (A-Mem, MemOS, Acontext, Mem0, Letta). <strong>None of them publish actual memory content.</strong> Memory is treated as ephemeral and private — generated at runtime, never persisted as a shareable artifact.</p>
     <p>Why would an operator share corrections that cost them time and expertise to produce? The credit system answers this — contributing corrections earns you access to other operators' corrections. Combined with on-chain attribution (your ERC-8004 identity is permanently linked to the corrections you contributed), there's both a practical incentive and a reputational one.</p>
+    </div>
   </div>
 </div>
 
@@ -303,13 +337,13 @@
 <script>
 function showTab(id) {
   const tab = document.querySelector(`[onclick="showTab('${id}')"]`);
-  const panel = document.getElementById(`tab-${id}`);
+  const win = document.getElementById(`win-${id}`);
   const wasActive = tab.classList.contains('active');
   document.querySelectorAll('.theory-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.theory-panel').forEach(p => p.classList.remove('visible'));
+  document.querySelectorAll('.theory-window').forEach(w => w.classList.remove('visible'));
   if (!wasActive) {
     tab.classList.add('active');
-    panel.classList.add('visible');
+    win.classList.add('visible');
   }
 }
 </script>
