@@ -76,9 +76,13 @@ async function main() {
   if (publishedLog?.topics[1]) {
     const fragmentId = BigInt(publishedLog.topics[1]);
     console.log(`  Fragment ID: ${fragmentId}`);
+    console.log();
+    console.log("Next steps:");
+    console.log(`  npm run list-fragments              # see all available fragments`);
+    console.log(`  npm run borrow-fragment -- ${fragmentId}       # borrow this fragment`);
   }
 
-  console.log("Done.");
+  console.log("\nDone.");
 }
 
 main().catch((err) => {

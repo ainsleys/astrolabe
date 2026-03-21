@@ -11,3 +11,4 @@ contracts/broadcast/
 
 # Runtime artifacts
 borrows/
+fragments/*-????????.md

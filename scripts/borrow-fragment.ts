@@ -95,6 +95,7 @@ async function main() {
     console.error(
       `Failed to fetch content: ${response.status} ${response.statusText}`
     );
+    console.error("Is the fragment server running? Start it with: npm run serve");
     process.exit(1);
   }
   const content = await response.text();

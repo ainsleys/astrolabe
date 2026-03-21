@@ -14,15 +14,16 @@
     "sanitize": "npx tsx scripts/sanitize-fragment.ts",
     "extract": "npx tsx scripts/extract-corrections.ts",
     "extract-steering": "npx tsx scripts/extract-steering-corrections.ts",
-    "list-fragments": "npx tsx scripts/list-fragments.ts"
+    "list-fragments": "npx tsx scripts/list-fragments.ts",
+    "demo": "npx tsx scripts/demo.ts"
   },
   "dependencies": {
     "viem": "^2.21.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "@anthropic-ai/sdk": "^0.39.0"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0",
-    "@anthropic-ai/sdk": "^0.39.0"
+    "typescript": "^5.6.0"
   }
 }
