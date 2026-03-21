@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Fragment Review</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+  .header { padding: 2rem 2rem 1rem; border-bottom: 1px solid #222; }
+  .header h1 { font-size: 1.5rem; font-weight: 600; color: #fff; }
+  .header p { color: #888; margin-top: 0.25rem; font-size: 0.875rem; }
+  .nav { display: flex; gap: 0.5rem; padding: 1rem 2rem; border-bottom: 1px solid #222; flex-wrap: wrap; }
+  .nav button { padding: 0.4rem 0.8rem; border: 1px solid #333; border-radius: 6px; background: #111; color: #ccc; cursor: pointer; font-size: 0.8rem; transition: all 0.15s; }
+  .nav button:hover { border-color: #555; color: #fff; }
+  .nav button.active { background: #1a3a2a; border-color: #2d7a4f; color: #5cdb7f; }
+  .nav button.rejected { background: #3a1a1a; border-color: #7a2d2d; color: #db5c5c; }
+  .nav button.approved { background: #1a3a2a; border-color: #2d7a4f; color: #5cdb7f; }
+  .cards { padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+  .card { display: none; background: #111; border: 1px solid #222; border-radius: 10px; overflow: hidden; }
+  .card.visible { display: block; }
+  .card-header { padding: 1rem 1.5rem; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+  .card-header h2 { font-size: 1rem; font-weight: 600; color: #fff; }
+  .badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+  .badge.feedback { background: #1a2a3a; color: #5c9fdb; }
+  .badge.project { background: #2a1a3a; color: #9f5cdb; }
+  .badge.source-faturbot { background: #1a3a2a; color: #5cdb7f; }
+  .badge.source-agroturk { background: #3a2a1a; color: #db9f5c; }
+  .badge.source-oceanventure { background: #1a2a3a; color: #5c9fdb; }
+  .badge.source-global { background: #2a2a2a; color: #aaa; }
+  .badges { display: flex; gap: 0.4rem; align-items: center; }
+  .meta { padding: 0.75rem 1.5rem; background: #0d0d0d; border-bottom: 1px solid #222; font-size: 0.8rem; color: #666; display: flex; gap: 1.5rem; }
+  .meta span { display: flex; align-items: center; gap: 0.3rem; }
+  .meta .label { color: #555; }
+  .card-body { padding: 1.5rem; }
+  .card-body .frontmatter { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-family: 'SF Mono', Menlo, monospace; font-size: 0.75rem; color: #888; white-space: pre-wrap; }
+  .card-body .content { line-height: 1.7; font-size: 0.9rem; }
+  .card-body .content h2 { font-size: 0.95rem; font-weight: 600; color: #fff; margin: 1.25rem 0 0.5rem; }
+  .card-body .content h3 { font-size: 0.875rem; font-weight: 600; color: #ddd; margin: 1rem 0 0.4rem; }
+  .card-body .content p { margin-bottom: 0.75rem; }
+  .card-body .content strong { color: #fff; }
+  .card-body .content ul, .card-body .content ol { margin: 0.5rem 0 0.75rem 1.25rem; }
+  .card-body .content li { margin-bottom: 0.3rem; }
+  .card-body .content code { background: #1a1a1a; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.8rem; color: #db9f5c; }
+  .pii-warning { background: #3a1a1a; border: 1px solid #7a2d2d; border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.8rem; color: #db5c5c; }
+  .pii-warning strong { color: #ff6b6b; }
+  .actions { padding: 1rem 1.5rem; border-top: 1px solid #222; display: flex; gap: 0.5rem; justify-content: flex-end; }
+  .actions button { padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: all 0.15s; }
+  .btn-approve { background: #1a3a2a; color: #5cdb7f; }
+  .btn-approve:hover { background: #2d5a3f; }
+  .btn-reject { background: #3a1a1a; color: #db5c5c; }
+  .btn-reject:hover { background: #5a2d2d; }
+  .btn-flag { background: #3a2a1a; color: #db9f5c; }
+  .btn-flag:hover { background: #5a3d2d; }
+  .summary { padding: 1.5rem 2rem; border-top: 2px solid #222; margin-top: 1rem; }
+  .summary h2 { font-size: 1.1rem; margin-bottom: 0.75rem; color: #fff; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; }
+  .summary-item { padding: 0.75rem; background: #111; border: 1px solid #222; border-radius: 6px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+  .status-approved { color: #5cdb7f; }
+  .status-rejected { color: #db5c5c; }
+  .status-pending { color: #888; }
+  .status-flagged { color: #db9f5c; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Memory Fragment Review</h1>
+  <p>Review agent memory files for PII/sensitivity before use as lending fragments. Click to approve, reject, or flag.</p>
+</div>
+
+<div class="nav" id="nav"></div>
+
+<div class="cards" id="cards"></div>
+
+<div class="summary" id="summary">
+  <h2>Review Status</h2>
+  <div class="summary-grid" id="summary-grid"></div>
+</div>
+
+<script>
+const fragments = [
+  {
+    id: "faturbot-ocr",
+    name: "OCR is NOT mocked in production",
+    source: "faturbot",
+    type: "feedback",
+    file: "feedback_ocr_not_mocked.md",
+    pii: ["References specific GCP service account key filename: faturabot-489714-d397f78ddc2e.json", "References specific product name and deployment platform (Railway)"],
+    frontmatter: `name: OCR is NOT mocked in production\ndescription: Google Cloud Vision OCR is real in production when credential env var is set\ntype: feedback`,
+    content: `<p>Production uses <strong>REAL Google Cloud Vision OCR</strong>, not a mock. The container logic picks the real OCR client when the environment is production and credentials are set.</p>
+
+<h2>Why</h2>
+<p>The user has corrected this multiple times. The confusion arises because (1) tests always use a mock client, (2) the credential is optional in config, and (3) early assessments said "OCR not connected" which was true at the time but is no longer accurate.</p>
+
+<h2>How to apply</h2>
+<p>When discussing OCR/document matching readiness, check whether the vision credential env var is set before claiming it's mocked. If the env var is set, production is running real OCR.</p>`
+  },
+  {
+    id: "faturbot-logging",
+    name: "Production logging is a launch prerequisite",
+    source: "faturbot",
+    type: "feedback",
+    file: "feedback_logging_before_launch.md",
+    pii: [],
+    frontmatter: `name: feedback_logging_before_launch\ndescription: Production logging at API boundaries is a launch prerequisite, not a nice-to-have\ntype: feedback`,
+    content: `<p>Production logging must be in place before going live. We shipped without logging in the WhatsApp send() method and couldn't diagnose why buyers weren't receiving messages.</p>
+
+<h2>Why</h2>
+<p>The user was frustrated that we went live without the ability to trace messages through the system. Every outbound API call (send, template, reminder) and every inbound webhook should log recipient, type, success/fail, and error details.</p>
+
+<h2>How to apply</h2>
+<p>For any new product, ensure logging is in the "launch checklist" alongside tests and deployment. Specifically: log at every API boundary (inbound webhooks, outbound sends, database writes for critical operations).</p>`
+  },
+  {
+    id: "faturbot-spam",
+    name: "Spam during testing is Meta WABA, not code bugs",
+    source: "faturbot",
+    type: "feedback",
+    file: "feedback_spam_meta.md",
+    pii: ["References specific platform (Meta WhatsApp Business API) behavior — not PII but commercially specific"],
+    frontmatter: `name: Spam from testing is Meta, not a code bug\ndescription: Increased spam during testing is from Meta's WhatsApp Business API platform classification, not app code\ntype: feedback`,
+    content: `<p>User investigated spam during testing. Root cause: <strong>Meta classifies numbers registered with WhatsApp Business API as business entities</strong>, exposing them to ad targeting. The user's personal number is used only to RECEIVE test messages (as a customer would), not registered as a business number — so this side-effect doesn't apply to them or their end users.</p>
+
+<h2>Why</h2>
+<p>The business number is a dedicated SIM. End users will also use personal numbers to message the bot, same as the user's test setup.</p>
+
+<h2>How to apply</h2>
+<p>Don't flag WhatsApp Business API phone number exposure as a risk to end users. The exposure only affects the registered business number (dedicated SIM).</p>`
+  },
+  {
+    id: "faturbot-billing",
+    name: "Billing strategy — reverse trial model",
+    source: "faturbot",
+    type: "project",
+    file: "project_billing_strategy.md",
+    pii: ["Contains specific pricing (199 TL/mo, 1,990 TL/yr)", "References specific payment processor (iyzico) with fee structure", "Contains strategic acquisition rationale"],
+    frontmatter: `name: Billing strategy — reverse trial, measure-then-set limits\ndescription: Decided on reverse trial model (30-day full access → free tier). Free tier limits TBD based on real usage data.\ntype: project`,
+    content: `<h2>Billing Model Decision</h2>
+<p><strong>Model: Reverse trial</strong></p>
+<ol>
+<li>Day 1-30: Full access, no limits, no CC required</li>
+<li>Day 31+: Downgrade to permanent free tier (limits TBD)</li>
+<li>Paid tier: single tier, no complexity</li>
+</ol>
+
+<h2>Why reverse trial over alternatives</h2>
+<ul>
+<li><strong>Pure 14-day trial:</strong> higher conversion (18-25%) but kills viral loop — 75% of users disappear entirely. For a WhatsApp-viral product where every invoice is a product demo, losing free users loses the growth engine.</li>
+<li><strong>Pure freemium:</strong> only 2-5% conversion, no upgrade urgency.</li>
+<li><strong>Reverse trial:</strong> ~15% conversion BUT the 85% who don't convert stay on free tier, keep sending invoices with viral CTA, keep generating signups. Net paying users over time exceeds the trial model.</li>
+<li>30 days (not 14): invoices are net-30+, so a seller needs 30 days to experience the full reminder cycle.</li>
+</ul>
+
+<h2>Free tier limits: NOT YET DECIDED</h2>
+<p>We don't know average invoices/month per seller yet (no real users). Decision: launch with no limits, instrument usage tracking, then after 4-6 weeks of real data, set the free tier wall just below the median active user's usage. This is exactly what KhataBook (India analog, 10M+ users) did.</p>
+
+<h2>How to apply</h2>
+<p>Don't build billing infrastructure prematurely. Don't guess at tier limits. Measure first.</p>`
+  },
+  {
+    id: "faturbot-creative",
+    name: "Automated video/creative pipeline",
+    source: "faturbot",
+    type: "project",
+    file: "project_creative_pipeline.md",
+    pii: ["References specific file paths in the faturbot repo"],
+    frontmatter: `name: Automated video/creative production pipeline\ndescription: Fully automated ad creative pipeline — HTML storyboards recorded via Puppeteer+ffmpeg\ntype: project`,
+    content: `<p>Automated pipeline for producing ad videos and static creatives:</p>
+<ul>
+<li><strong>Storyboard HTML</strong> — full animated promo video in pure HTML/CSS/JS</li>
+<li><strong>WhatsApp mockup HTML</strong> — 7 scenes simulating WhatsApp conversations</li>
+<li><strong>Puppeteer recording scripts</strong> record these to MP4 via frame capture + ffmpeg</li>
+<li><strong>Static creatives</strong> exported at production resolution (1080x1080, 1080x1920) via Puppeteer screenshots</li>
+</ul>
+
+<h2>Why</h2>
+<p>Enables rapid iteration on ad creatives without Canva/CapCut or manual screen recording. New variant in ~5 minutes of editing + 40 seconds of recording.</p>
+
+<h2>How to apply</h2>
+<p>When asked to create new ad variants, modify the storyboard HTML and re-record. Don't suggest manual tools — the automated pipeline is faster.</p>`
+  },
+  {
+    id: "faturbot-no-efatura",
+    name: "No e-fatura integration (intentional)",
+    source: "faturbot",
+    type: "project",
+    file: "project_no_efatura.md",
+    pii: [],
+    frontmatter: `name: E-fatura not planned\ndescription: E-fatura integration is intentionally not planned; don't flag as blocker\ntype: project`,
+    content: `<p><em>(File not read — included from MEMORY.md index. Description: E-fatura integration is intentionally not planned for now; don't flag it as a blocker or missing feature.)</em></p>`
+  },
+  {
+    id: "faturbot-kirabot",
+    name: "KiraBot — separate WhatsApp rent ledger",
+    source: "faturbot",
+    type: "project",
+    file: "project_kirabot.md",
+    pii: ["References specific product name and repo path (~/kirabot)"],
+    frontmatter: `name: KiraBot\ndescription: KiraBot: separate repo for WhatsApp rent ledger. MVP plan approved 2026-03-19.\ntype: project`,
+    content: `<p><em>(File not read — included from MEMORY.md index. Description: KiraBot is a separate repo for a WhatsApp-based rent ledger product. MVP plan approved 2026-03-19.)</em></p>`
+  },
+  {
+    id: "faturbot-rebrand",
+    name: "Rebranded from Kesiyo to FaturBot",
+    source: "faturbot",
+    type: "project",
+    file: "project_rebrand_faturbot.md",
+    pii: ["Contains old and new product names"],
+    frontmatter: `name: Rebranded from Kesiyo to FaturBot\ndescription: All user-facing text needs updating from Kesiyo to FaturBot\ntype: project`,
+    content: `<p><em>(File not read — included from MEMORY.md index. Description: Product was rebranded. All user-facing text needs updating.)</em></p>`
+  },
+  {
+    id: "agroturk-goals",
+    name: "Agroturk — Turkish agriculture coordination failures",
+    source: "agroturk",
+    type: "project",
+    file: "project_goals.md",
+    pii: [],
+    frontmatter: `name: project_goals\ndescription: Agroturk project aims to map coordination/incentive failures in Turkish agriculture vs. its potential\ntype: project`,
+    content: `<p>Agroturk is a research project analyzing why Turkish agriculture underperforms relative to its large natural resources. The initial framing compares Turkey to Dutch agriculture, though research shows Spain/Italy/Chile may be better comparators.</p>
+
+<h2>Why</h2>
+<p>Turkey has the largest agricultural land in Europe, 6 climate zones, Fertile Crescent heritage, but average farm is only 6 ha across 4-5 non-contiguous parcels. Key failures are in subsidies, cooperatives, land fragmentation, water management, middleman value capture, and political short-termism.</p>
+
+<h2>How to apply</h2>
+<p>Frame analysis around coordination/incentive failures. Highlight unexpected successes (Antalya greenhouses, flour exports, aquaculture, TARSIM insurance) alongside failures. Challenge assumptions when evidence warrants it (e.g., Netherlands comparison is partially misleading; informal economy may hide significant output).</p>`
+  },
+  {
+    id: "oceanventure-index",
+    name: "OceanVenture — Product exploration lab",
+    source: "oceanventure",
+    type: "project",
+    file: "MEMORY.md (index only)",
+    pii: ["Names Andrew Cal as CTO of Olipha", "References IP assignment details", "Lists specific product concepts (NoFoul, BioShell, etc.)"],
+    frontmatter: `(MEMORY.md index — no individual memory files with content)`,
+    content: `<h2>What This Project Is</h2>
+<ul>
+<li>Product exploration lab evaluating new product development areas</li>
+<li>Scope is broad materials science and adjacent domains (PHA, aquaculture coatings)</li>
+<li>Many concepts tested and rejected quickly; fast kills are the primary value output</li>
+</ul>
+
+<h2>Workflow Conventions</h2>
+<ul>
+<li><strong>Concept lifecycle:</strong> Gate 1 (Mechanism) → Gate 2 (Cost) → Gate 3 (Competition) — sequential, enforced</li>
+<li><strong>Desk ceiling:</strong> explicit stop state — no more desk work unless new non-desk info arrives</li>
+<li>Kill memos: every kill gets documented with date, reason, and revisit conditions</li>
+<li>Gate templates proven on real projects (4 kills in first week)</li>
+</ul>
+
+<h2>Active Concept Platforms (as of Feb 2026)</h2>
+<ul>
+<li>PHA Aquaculture: NoFoul (anti-fouling coating, desk ceiling), BioShell Nursery (settlement substrate, desk ceiling)</li>
+<li>LMW Xanthan: Pigment Ink (spark), Prebiotic Fiber (spark)</li>
+<li>4 concepts killed: BioShell cage-scale, FeedAdd, Mussel Socking, Probiotic Encapsulation</li>
+</ul>`
+  }
+];
+
+// State
+const decisions = {};
+
+function render() {
+  const nav = document.getElementById('nav');
+  const cards = document.getElementById('cards');
+
+  nav.innerHTML = fragments.map(f => {
+    const cls = decisions[f.id] === 'approved' ? 'approved' : decisions[f.id] === 'rejected' ? 'rejected' : '';
+    return `<button class="${cls}" onclick="show('${f.id}')">${f.name.slice(0, 30)}${f.name.length > 30 ? '…' : ''}</button>`;
+  }).join('');
+
+  cards.innerHTML = fragments.map(f => `
+    <div class="card visible" id="card-${f.id}">
+      <div class="card-header">
+        <h2>${f.name}</h2>
+        <div class="badges">
+          <span class="badge source-${f.source}">${f.source}</span>
+          <span class="badge ${f.type}">${f.type}</span>
+        </div>
+      </div>
+      <div class="meta">
+        <span><span class="label">File:</span> ${f.file}</span>
+      </div>
+      ${f.pii.length > 0 ? `<div style="padding: 0.75rem 1.5rem;"><div class="pii-warning"><strong>⚠ PII/Sensitivity flags:</strong><ul style="margin: 0.5rem 0 0 1rem;">${f.pii.map(p => `<li>${p}</li>`).join('')}</ul></div></div>` : ''}
+      <div class="card-body">
+        <div class="frontmatter">${f.frontmatter}</div>
+        <div class="content">${f.content}</div>
+      </div>
+      <div class="actions">
+        <button class="btn-reject" onclick="decide('${f.id}','rejected')">Reject</button>
+        <button class="btn-flag" onclick="decide('${f.id}','flagged')">Needs Redaction</button>
+        <button class="btn-approve" onclick="decide('${f.id}','approved')">Approve</button>
+      </div>
+    </div>
+  `).join('');
+
+  renderSummary();
+}
+
+function decide(id, status) {
+  decisions[id] = status;
+  render();
+  // Scroll to summary
+  document.getElementById('summary').scrollIntoView({ behavior: 'smooth' });
+}
+
+function show(id) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('visible'));
+  document.getElementById(`card-${id}`).classList.add('visible');
+  document.getElementById(`card-${id}`).scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderSummary() {
+  const grid = document.getElementById('summary-grid');
+  grid.innerHTML = fragments.map(f => {
+    const status = decisions[f.id] || 'pending';
+    const labels = { approved: 'Approved', rejected: 'Rejected', flagged: 'Needs Redaction', pending: 'Pending' };
+    return `<div class="summary-item">
+      <span>${f.name.slice(0, 35)}${f.name.length > 35 ? '…' : ''}</span>
+      <span class="status-${status}">${labels[status]}</span>
+    </div>`;
+  }).join('');
+}
+
+render();
+</script>
+</body>
+</html>

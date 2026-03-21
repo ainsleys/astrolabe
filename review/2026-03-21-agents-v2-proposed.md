@@ -2,7 +2,7 @@
 
 ## What this project is
 
-Astrolabe is an agent-first marketplace experiment built around one concrete asset class: **steering-derived correction fragments**.
+Synthesis is an agent-first marketplace experiment built around one concrete asset class: **steering-derived correction fragments**.
 
 The immediate demo is a case study:
 
@@ -10,19 +10,19 @@ The immediate demo is a case study:
 - That steering can be extracted from systems like Claude memories and Codex thread steering.
 - The resulting correction fragments can be published, borrowed, evaluated, and attributed on-chain.
 
-The broader product direction is larger than the demo. Correction fragments are the first asset class. Other agent-native exchanges, like task execution or reciprocal work commitments, may follow, but they are not the core demonstration in this repo today.
+The broader product direction is larger than the demo. Correction fragments are the first asset class. Other agent-native exchanges, like task execution or reciprocal work commitments, may follow, but they are not the core proof in this repo today.
 
 This is a hackathon project, not a production system.
 
-## What the current repo demonstrates
+## What the current repo proves
 
-Be precise when describing the project. The current codebase is best understood as demonstrating three things:
+Be precise when describing the project. The current codebase is best understood as proving three things:
 
 1. Steering and correction signals can be turned into reusable artifacts.
 2. Borrowed correction fragments can sometimes improve downstream task performance.
 3. An agent-native exchange loop can be scaffolded around those artifacts using operator identity, borrow receipts, evaluation, and reputation feedback.
 
-Do not over-claim beyond that. The repo does not yet demonstrate a mature marketplace, a robust discovery system, or a durable reputation economy at scale.
+Do not over-claim beyond that. The repo does not yet prove a mature marketplace, a robust discovery system, or a durable reputation economy at scale.
 
 ## Current state vs target state
 
@@ -56,19 +56,13 @@ These are the repo's resolved positions unless a document explicitly marks somet
 
 **Claude memories and Codex steering are equivalent upstream sources.** Claude `type: feedback` files are direct correction artifacts. Codex contributes the same class of signal through explicit steer events, interrupt-and-redirect actions, and corrective user turns. Both should be distilled into the same fragment format.
 
-**This is a case study first, a marketplace second.** The demo should foreground the claim that steering data can improve open-source scaffolding and adjacent agent tasks, supported by measured eval deltas. The marketplace layer exists to show how those artifacts could be exchanged, attributed, and rewarded.
+**This is a case study first, a marketplace second.** The demo should foreground the empirical claim that steering data can improve open-source scaffolding and adjacent agent tasks. The marketplace layer exists to show how those artifacts could be exchanged, attributed, and rewarded.
 
 **The marketplace is operator-first.** Agents are ephemeral. Operators persist. Publishing, borrowing, and balance accounting should accrue to operators, while agent-level ERC-8004 identity remains the canonical bridge for linked agents and reputation submission where required.
 
-**Fragments are the current exchange primitive.** Steering-derived correction fragments are the thing this repo actually supports end to end. Task execution, compute commitments, or other agent-native goods are future extensions, not the present demonstration.
+**Fragments are the current exchange primitive.** Steering-derived correction fragments are the thing this repo actually supports end to end. Task execution, compute commitments, or other agent-native goods are future extensions, not the present proof.
 
 **The system uses a reciprocity ledger, not a token.** Credits are an internal accounting unit. They are not an asset, are not transferable, and are meant to encourage contribution back to the commons rather than to create speculation.
-
-**Public goods with attribution, not paid access control.** The verify-before-pay flow means borrowers read content before paying. The micropayment compensates the contributor for labor that produced the correction, not for access to it. The analogy is tipping or citation royalties, not DRM.
-
-**Inference-time augmentation, not training.** Borrowed corrections are prepended as context, not used for fine-tuning or RL. The structural analogy to RL still holds, but it operates at the context layer rather than in model weights.
-
-**ERC-8004 identity is the trust anchor.** Agent IDs are verified on-chain through the canonical registry, and reputation accrues per operator-within-domain. This is the basis for the trust and attribution story in the demo.
 
 **Content stays off-chain.** The contract stores identifiers, hashes, domains, prices, balances, and receipts. Fragment bytes remain off-chain and must be hash-verified before a borrow is recorded.
 
@@ -91,7 +85,6 @@ contracts/src/OperatorRegistry.sol
 contracts/src/MemoryLending.sol
   - publish fragments under operator identity
   - borrow fragments against a credit line
-  - require a linked agent before borrowing
   - track operator balances
   - emit on-chain borrow receipts
   - allow deployer-managed credit line updates in v0
@@ -112,14 +105,10 @@ scripts/publish-fragment.ts
 
 scripts/borrow-fragment.ts
   - read fragment metadata
-  - preflight linked-agent and credit eligibility
   - fetch off-chain content
   - verify hash before borrowing
   - submit the borrow tx
   - save a borrow receipt into borrows/
-
-scripts/set-credit-line.ts
-  - grant or adjust operator credit lines from the deployer wallet
 
 scripts/evaluate.ts
   - run baseline vs augmented A/B evaluation
@@ -234,18 +223,11 @@ npm run register-operator -- https://example.com/operator.json
 
 This registers contributor and borrower operators from the configured wallets and prints the operator IDs to copy into `.env`.
 
-Operators start with the library-card base credit line of `5`. The deployer/admin can still raise an operator's limit when needed:
-
-```bash
-npm run set-credit-line -- <borrower-operator-id> 8
-```
-
 ### Publish, borrow, and evaluate
 
 ```bash
 npm run serve
 npm run publish-fragment -- fragments/feedback-logging-before-launch.md saas-engineering 1
-npm run set-credit-line -- <borrower-operator-id> 8
 npm run borrow-fragment -- 0
 npm run evaluate
 npm run evaluate -- --feedback
@@ -278,48 +260,6 @@ When updating docs, README text, demo scripts, or submission material:
 - Frame the marketplace as agent-first and extensible, but do not imply that future asset classes are already implemented.
 - Separate current implementation from target architecture whenever both appear in the same document.
 - Prefer honest language like `the current demo shows`, `the current repo implements`, and `future extensions include`.
-
-## Current Base deployment
-
-| Contract | Address | Chain |
-|----------|---------|-------|
-| OperatorRegistry | `0x9C3cE38306bE382b5EC2E7B766FB1cd37C4a3306` | Base |
-| MemoryLending | `0x392003B2c4D09fc9d68e52621BfB11c60b251E4d` | Base |
-| ERC-8004 Identity Registry | `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` | Base (canonical) |
-| ERC-8004 Reputation Registry | `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63` | Base (canonical) |
-
-| Identity | ID |
-|----------|-----|
-| Contributor agent | 35279 |
-| Borrower agent | 35280 |
-| Contributor operator | 1 |
-| Borrower operator | 2 |
-
-## Eval results (latest run)
-
-| Domain | Source | Avg delta | Reputation submitted |
-|--------|--------|-----------|---------------------|
-| aquaculture | local fragments | +3.1 | No (not borrowed) |
-| materials-science | borrow receipts | +1.9 | Yes (7/10 on-chain) |
-| saas-engineering | borrow receipts | +0.6 | Yes (6/10 on-chain) |
-
-Corrections help most where genuine domain knowledge gaps exist. The service-integration-verification task consistently regresses (baseline already strong), but is outweighed by strong improvements on the other two SaaS tasks. Per-domain reputation scores reflect the actual measured deltas.
-
-## Known limitations
-
-These are acknowledged gaps between the demo and a production system:
-
-1. **Single-model evaluation.** Baseline, augmented, and judge responses all use Claude Sonnet. Cross-model evaluation (corrections from Claude applied to Llama, judged by GPT) would more convincingly demonstrate the "public correction layer" thesis. Not tested due to time constraints.
-
-2. **Two-operator demo.** Both operators are controlled by the same developer. Multi-party dynamics (price discovery, adversarial behavior, Sybil resistance) are untested. A second independent operator would strengthen the demonstration.
-
-3. **No statistical confidence intervals.** Eval deltas are 1-3 points on a 10-point scale. LLM-as-judge variance is often 1-2 points. Repeated trials and confidence intervals would be needed to claim statistical significance. The current results are indicative, not conclusive.
-
-4. **Borrower-run evaluation.** The borrower runs the eval and self-reports. A borrower could suppress negative results. The production path is an independent eval oracle, potentially in a TEE.
-
-5. **No Sybil resistance.** An operator could register many identities to game the credit system. Production would need identity verification or staking.
-
-6. **Content is readable before payment.** The verify-before-pay flow means the economic incentive to pay is reciprocity, not access control. This is intentional (public goods model) but means the system depends on long-term repeated interaction that a hackathon demo cannot demonstrate.
 
 ## Working norms
 

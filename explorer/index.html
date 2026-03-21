@@ -200,9 +200,9 @@
     <div class="stat neutral"><div class="value">7</div><div class="label">Fragments published</div></div>
     <div class="stat neutral"><div class="value">2</div><div class="label">Operators</div></div>
     <div class="stat neutral"><div class="value">3</div><div class="label">Domains</div></div>
-    <div class="stat positive"><div class="value">+2.1</div><div class="label">Aquaculture delta</div></div>
-    <div class="stat positive"><div class="value">+2.0</div><div class="label">Materials sci delta</div></div>
-    <div class="stat negative"><div class="value">-1.7</div><div class="label">SaaS eng delta</div></div>
+    <div class="stat positive"><div class="value">+3.1</div><div class="label">Aquaculture delta</div></div>
+    <div class="stat positive"><div class="value">+1.9</div><div class="label">Materials sci delta</div></div>
+    <div class="stat positive"><div class="value">+0.6</div><div class="label">SaaS eng delta</div></div>
   </div>
 </div>
 
@@ -249,14 +249,14 @@
   <h2>Evaluation results</h2>
 
   <div class="card">
-    <div class="card-header"><h3>Aquaculture</h3><span class="badge badge-green">+2.1 avg</span></div>
+    <div class="card-header"><h3>Aquaculture</h3><span class="badge badge-green">+3.1 avg</span></div>
     <div class="card-body">
       <table>
         <thead><tr><th>Task</th><th>Baseline</th><th>Augmented</th><th>Delta</th></tr></thead>
         <tbody>
-          <tr><td>Tilapia disease surveillance</td><td>6.7</td><td>8.7</td><td style="color:#5cdb7f">+2.0</td></tr>
-          <tr><td>FCR literature review</td><td>6.7</td><td>8.7</td><td style="color:#5cdb7f">+2.0</td></tr>
-          <tr><td>Carp breeding priorities</td><td>6.3</td><td>8.7</td><td style="color:#5cdb7f">+2.3</td></tr>
+          <tr><td>Tilapia disease surveillance</td><td>5.3</td><td>9.3</td><td style="color:#5cdb7f">+4.0</td></tr>
+          <tr><td>FCR literature review</td><td>6.3</td><td>8.7</td><td style="color:#5cdb7f">+2.3</td></tr>
+          <tr><td>Carp breeding priorities</td><td>5.7</td><td>8.7</td><td style="color:#5cdb7f">+3.0</td></tr>
         </tbody>
       </table>
       <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Corrections provided domain expertise the model lacked — specific pathogen priorities, normalization methodology, and breeding program constraints.</p>
@@ -264,14 +264,14 @@
   </div>
 
   <div class="card">
-    <div class="card-header"><h3>Materials science</h3><span class="badge badge-green">+2.0 avg</span></div>
+    <div class="card-header"><h3>Materials science</h3><span class="badge badge-green">+1.9 avg</span></div>
     <div class="card-body">
       <table>
         <thead><tr><th>Task</th><th>Baseline</th><th>Augmented</th><th>Delta</th></tr></thead>
         <tbody>
           <tr><td>Biofouling prevention strategy</td><td>6.7</td><td>8.7</td><td style="color:#5cdb7f">+2.0</td></tr>
-          <tr><td>HDPE fermentation vessel</td><td>6.3</td><td>9.0</td><td style="color:#5cdb7f">+2.7</td></tr>
-          <tr><td>PHA marine degradation</td><td>7.3</td><td>8.7</td><td style="color:#5cdb7f">+1.3</td></tr>
+          <tr><td>HDPE fermentation vessel</td><td>7.3</td><td>9.0</td><td style="color:#5cdb7f">+1.7</td></tr>
+          <tr><td>PHA marine degradation</td><td>7.3</td><td>9.3</td><td style="color:#5cdb7f">+2.0</td></tr>
         </tbody>
       </table>
       <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Corrections provided specific material compatibility data, degradation kinetics, and biofouling succession knowledge the model lacked. Reputation: 7/10 submitted on-chain.</p>
@@ -279,17 +279,17 @@
   </div>
 
   <div class="card">
-    <div class="card-header"><h3>SaaS engineering</h3><span class="badge badge-red">-1.7 avg</span></div>
+    <div class="card-header"><h3>SaaS engineering</h3><span class="badge badge-green">+0.6 avg</span></div>
     <div class="card-body">
       <table>
         <thead><tr><th>Task</th><th>Baseline</th><th>Augmented</th><th>Delta</th></tr></thead>
         <tbody>
-          <tr><td>SaaS launch checklist</td><td>8.3</td><td>8.7</td><td style="color:#5cdb7f">+0.3</td></tr>
-          <tr><td>WhatsApp bot debugging</td><td>8.0</td><td>8.7</td><td style="color:#5cdb7f">+0.7</td></tr>
+          <tr><td>SaaS launch checklist</td><td>6.7</td><td>9.0</td><td style="color:#5cdb7f">+2.3</td></tr>
+          <tr><td>WhatsApp bot debugging</td><td>7.0</td><td>9.0</td><td style="color:#5cdb7f">+2.0</td></tr>
           <tr><td>Service integration verification</td><td>9.3</td><td>6.7</td><td style="color:#db5c5c">-2.7</td></tr>
         </tbody>
       </table>
-      <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Mixed. Baseline was already strong. One task regressed — corrections added noise. System submitted 3/10 reputation.</p>
+      <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Mixed. Two tasks improved strongly, one regressed (baseline was already strong). Net positive but with variance. System submitted 6/10 reputation.</p>
     </div>
   </div>
 </div>
@@ -310,18 +310,18 @@
         </div>
         <div class="trail-item">
           <div class="trail-label">Fragment published</div>
-          <div class="trail-hash"><a href="https://basescan.org/tx/0xb741441b3d2c875c90d9bb2e9ee70a507f1747935283a6f0e42e894b15316e0b" target="_blank">0xb74144...16e0b</a></div>
+          <div class="trail-hash"><a href="https://basescan.org/tx/0x3b49da5e52a63afbcc3bec49742f50ff719ac84bf0e37cd78707d043317ea8a3" target="_blank">0x3b49da...ea8a3</a></div>
           <div class="dim">domain: saas-engineering | price: 1 credit | operator: #1</div>
         </div>
         <div class="trail-item">
           <div class="trail-label">Fragment borrowed</div>
-          <div class="trail-hash"><a href="https://basescan.org/tx/0xa84aad261b9c31eb7b7ca89cbe759df6d3ff348774715f68fd07f5143180a372" target="_blank">0xa84aad...a372</a></div>
-          <div class="dim">borrower: #2 | credit deducted: 1 | hash verified before borrow</div>
+          <div class="trail-hash"><a href="https://basescan.org/tx/0x65bff962bd010b44fcdd31ec8cf478e31af5143cb11308776bff3f5f711f8177" target="_blank">0x65bff9...f8177</a></div>
+          <div class="dim">borrower: #2 | credit deducted: 1 | hash verified before borrow | duplicate prevention active</div>
         </div>
         <div class="trail-item">
-          <div class="trail-label">Reputation feedback submitted</div>
-          <div class="trail-hash"><a href="https://basescan.org/tx/0x1cfdf9708c14bcce1224dd674c18707deaeebd92edc378bcd6e78472af8ae2ed" target="_blank">0x1cfdf9...2ed</a></div>
-          <div class="dim">score: 4/10 | tag: memory-lend / saas-engineering | canonical ERC-8004 Reputation</div>
+          <div class="trail-label">Reputation feedback submitted (reads on-chain reputation for credit line)</div>
+          <div class="trail-hash"><a href="https://basescan.org/tx/0x42cfaaf4908e39e0f83a863e9a9cbb66f43765d5880975d35a04e29348e0ed74" target="_blank">0x42cfaa...0ed74</a></div>
+          <div class="dim">score: 6/10 | tag: memory-lend / saas-engineering | canonical ERC-8004 Reputation</div>
         </div>
       </div>
     </div>

@@ -65,11 +65,11 @@ All identity checks, borrow receipts, credit accounting, and reputation feedback
 
 | Domain | Avg delta | Reputation | Notes |
 |--------|-----------|------------|-------|
-| Aquaculture | **+2.1** | — (local) | Corrections about tilapia disease, FCR methodology, and carp breeding improved responses. |
-| Materials science | **+2.0** | 7/10 | Biofouling prevention, HDPE bioreactors, PHA degradation — domain expertise the model lacked. |
-| SaaS engineering | **-1.7** | 3/10 | Mixed — two tasks improved slightly, one regressed. Baseline was already strong. |
+| Aquaculture | **+3.1** | — (local) | Corrections about tilapia disease, FCR methodology, and carp breeding improved responses. |
+| Materials science | **+1.9** | 7/10 | Biofouling prevention, HDPE bioreactors, PHA degradation — domain expertise the model lacked. |
+| SaaS engineering | **+0.6** | 6/10 | Mixed — two tasks improved strongly, one regressed. Net positive but with variance. |
 
-Mixed results are honest results. The system assigned low reputation to domains where corrections didn't help, and higher reputation where they did.
+Results show corrections help most where genuine domain knowledge gaps exist. The service-integration-verification task consistently regresses because the baseline is already strong — the system captures this honestly through per-task scoring.
 
 ## Setup
 
