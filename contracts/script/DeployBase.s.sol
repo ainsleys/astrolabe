@@ -6,6 +6,7 @@ import "../src/OperatorRegistry.sol";
 import "../src/MemoryLending.sol";
 import "../src/interfaces/IIdentityRegistry.sol";
 import "../src/interfaces/IOperatorRegistry.sol";
+import "../src/interfaces/IReputationRegistry.sol";
 
 /// @title DeployBase
 /// @notice Deploy OperatorRegistry + MemoryLending to Base.
@@ -15,19 +16,22 @@ contract DeployBase is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address identityRegistryAddr = vm.envAddress("IDENTITY_REGISTRY");
+        address reputationRegistryAddr = vm.envAddress("REPUTATION_REGISTRY");
 
         vm.startBroadcast(deployerKey);
 
         IIdentityRegistry identityRegistry = IIdentityRegistry(identityRegistryAddr);
+        IReputationRegistry reputationRegistry = IReputationRegistry(reputationRegistryAddr);
 
         // Deploy operator registry
         OperatorRegistry opRegistry = new OperatorRegistry(identityRegistry);
         console.log("OperatorRegistry:", address(opRegistry));
 
-        // Deploy lending contract
+        // Deploy lending contract (reads reputation from canonical ERC-8004)
         MemoryLending lending = new MemoryLending(
             identityRegistry,
-            IOperatorRegistry(address(opRegistry))
+            IOperatorRegistry(address(opRegistry)),
+            reputationRegistry
         );
         console.log("MemoryLending:", address(lending));
 

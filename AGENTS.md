@@ -283,8 +283,8 @@ When updating docs, README text, demo scripts, or submission material:
 
 | Contract | Address | Chain |
 |----------|---------|-------|
-| OperatorRegistry | `0xb831Be94a83B581855B2802dE85E3f34aC4F5Fc2` | Base |
-| MemoryLending | `0x7d817358A7eaCEB745A1Bb4C83dBE1123B46545D` | Base |
+| OperatorRegistry | `0x9C3cE38306bE382b5EC2E7B766FB1cd37C4a3306` | Base |
+| MemoryLending | `0x392003B2c4D09fc9d68e52621BfB11c60b251E4d` | Base |
 | ERC-8004 Identity Registry | `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` | Base (canonical) |
 | ERC-8004 Reputation Registry | `0x8004BAa17C55a88189AE136b182e5fdA19dE9b63` | Base (canonical) |
 
@@ -299,10 +299,27 @@ When updating docs, README text, demo scripts, or submission material:
 
 | Domain | Source | Avg delta | Reputation submitted |
 |--------|--------|-----------|---------------------|
-| aquaculture | local fragments | +1.7 | No (not borrowed) |
-| saas-engineering | borrow receipts | -0.9 | Yes (4/10 on-chain) |
+| aquaculture | local fragments | +2.1 | No (not borrowed) |
+| materials-science | borrow receipts | +2.0 | Yes (7/10 on-chain) |
+| saas-engineering | borrow receipts | -1.7 | Yes (3/10 on-chain) |
 
-The negative SaaS result is honest and expected — the baseline was already strong for one task. The system submitted a low reputation score accordingly.
+Mixed results are honest results. Corrections help where genuine knowledge gaps exist (aquaculture, materials science) and can hurt when the baseline is already strong (SaaS engineering). The system submitted reputation scores that reflect the actual measured deltas.
+
+## Known limitations
+
+These are acknowledged gaps between the demo and a production system:
+
+1. **Single-model evaluation.** Baseline, augmented, and judge responses all use Claude Sonnet. Cross-model evaluation (corrections from Claude applied to Llama, judged by GPT) would more convincingly demonstrate the "public correction layer" thesis. Not tested due to time constraints.
+
+2. **Two-operator demo.** Both operators are controlled by the same developer. Multi-party dynamics (price discovery, adversarial behavior, Sybil resistance) are untested. A second independent operator would strengthen the demonstration.
+
+3. **No statistical confidence intervals.** Eval deltas are 1-3 points on a 10-point scale. LLM-as-judge variance is often 1-2 points. Repeated trials and confidence intervals would be needed to claim statistical significance. The current results are indicative, not conclusive.
+
+4. **Borrower-run evaluation.** The borrower runs the eval and self-reports. A borrower could suppress negative results. The production path is an independent eval oracle, potentially in a TEE.
+
+5. **No Sybil resistance.** An operator could register many identities to game the credit system. Production would need identity verification or staking.
+
+6. **Content is readable before payment.** The verify-before-pay flow means the economic incentive to pay is reciprocity, not access control. This is intentional (public goods model) but means the system depends on long-term repeated interaction that a hackathon demo cannot demonstrate.
 
 ## Working norms
 

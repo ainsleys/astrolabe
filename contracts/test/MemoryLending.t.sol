@@ -6,6 +6,27 @@ import "../src/MemoryLending.sol";
 import "../src/OperatorRegistry.sol";
 import "../src/interfaces/IIdentityRegistry.sol";
 import "../src/interfaces/IOperatorRegistry.sol";
+import "../src/interfaces/IReputationRegistry.sol";
+
+/// @dev Mock reputation registry that returns configurable summaries.
+///      Uses fallback for giveFeedback to avoid stack-too-deep (8 params).
+contract MockRepRegistryLending {
+    mapping(uint256 => int128) public summaryValues;
+    mapping(uint256 => uint64) public summaryCounts;
+
+    function setSummary(uint256 agentId, uint64 count, int128 value) external {
+        summaryCounts[agentId] = count;
+        summaryValues[agentId] = value;
+    }
+
+    function getSummary(uint256 agentId, address[] calldata, string calldata, string calldata)
+        external view returns (uint64 count, int128 summaryValue, uint8 summaryValueDecimals)
+    {
+        return (summaryCounts[agentId], summaryValues[agentId], 0);
+    }
+
+    fallback() external {}
+}
 
 /// @dev Mock identity registry for lending tests
 contract MockIdRegistryLending is IIdentityRegistry {
@@ -30,6 +51,7 @@ contract MemoryLendingTest is Test {
     MemoryLending lending;
     OperatorRegistry opRegistry;
     MockIdRegistryLending idRegistry;
+    MockRepRegistryLending repRegistry;
 
     address deployer_ = makeAddr("deployer");
     address contributor = makeAddr("contributor");
@@ -66,11 +88,15 @@ contract MemoryLendingTest is Test {
         vm.prank(borrower);
         opRegistry.linkAgent(borrowerOpId, borrowerAgentId);
 
+        // Deploy reputation registry mock
+        repRegistry = new MockRepRegistryLending();
+
         // Deploy lending contract (deployer_ is the deployer)
         vm.prank(deployer_);
         lending = new MemoryLending(
             IIdentityRegistry(address(idRegistry)),
-            IOperatorRegistry(address(opRegistry))
+            IOperatorRegistry(address(opRegistry)),
+            IReputationRegistry(address(repRegistry))
         );
     }
 
@@ -347,9 +373,52 @@ contract MemoryLendingTest is Test {
         assertFalse(f.active);
     }
 
+    // ── duplicate borrow ──────────────────────────────────────
+
+    function test_borrowRevertsDuplicate() public {
+        vm.prank(contributor);
+        lending.publishFragment(
+            contributorOpId, contentHash, contentURI, domain, priceCredits
+        );
+
+        vm.prank(deployer_);
+        lending.setCreditLine(borrowerOpId, 10);
+
+        vm.prank(borrower);
+        lending.borrowFragment(0, borrowerOpId);
+
+        vm.prank(borrower);
+        vm.expectRevert("Already borrowed");
+        lending.borrowFragment(0, borrowerOpId);
+    }
+
+    // ── reputation-driven credit line ────────────────────────
+
+    function test_reputationBonusExtendsCreditLine() public {
+        // Set reputation for borrower's agent: summaryValue = 3 (positive)
+        repRegistry.setSummary(borrowerAgentId, 2, 3);
+
+        // Effective credit line should be BASE (5) + reputation bonus (3 * 2 = 6) = 11
+        uint256 creditLine = lending.getCreditLine(borrowerOpId);
+        assertEq(creditLine, 11);
+    }
+
+    function test_negativeReputationDoesNotReduceCreditLine() public {
+        // Set negative reputation
+        repRegistry.setSummary(borrowerAgentId, 2, -5);
+
+        // Should still get BASE_CREDIT_LINE (5), no reduction
+        uint256 creditLine = lending.getCreditLine(borrowerOpId);
+        assertEq(creditLine, 5);
+    }
+
     // ── constant ─────────────────────────────────────────────
 
     function test_baseCreditLine() public view {
         assertEq(lending.BASE_CREDIT_LINE(), 5);
+    }
+
+    function test_creditPerReputation() public view {
+        assertEq(lending.CREDIT_PER_REPUTATION(), 2);
     }
 }

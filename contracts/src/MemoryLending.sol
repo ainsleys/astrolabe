@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./interfaces/IIdentityRegistry.sol";
 import "./interfaces/IOperatorRegistry.sol";
+import "./interfaces/IReputationRegistry.sol";
 
 /// @title MemoryLending
 /// @notice Publish and borrow memory fragments with on-chain receipts.
@@ -11,11 +12,17 @@ import "./interfaces/IOperatorRegistry.sol";
 contract MemoryLending {
     IIdentityRegistry public immutable identityRegistry;
     IOperatorRegistry public immutable operatorRegistry;
+    IReputationRegistry public immutable reputationRegistry;
     address public immutable deployer;
 
-    constructor(IIdentityRegistry _identityRegistry, IOperatorRegistry _operatorRegistry) {
+    constructor(
+        IIdentityRegistry _identityRegistry,
+        IOperatorRegistry _operatorRegistry,
+        IReputationRegistry _reputationRegistry
+    ) {
         identityRegistry = _identityRegistry;
         operatorRegistry = _operatorRegistry;
+        reputationRegistry = _reputationRegistry;
         deployer = msg.sender;
     }
 
@@ -37,6 +44,9 @@ contract MemoryLending {
     mapping(uint256 => int256) public balances;
     /// @notice Credit lines: operatorId → max allowed negative balance
     mapping(uint256 => uint256) public creditLines;
+
+    /// @notice Duplicate borrow prevention: operatorId → fragmentId → borrowed
+    mapping(uint256 => mapping(uint256 => bool)) public hasBorrowed;
 
     /// @notice Starter credit for every operator
     uint256 public constant BASE_CREDIT_LINE = 5;
@@ -106,6 +116,7 @@ contract MemoryLending {
 
         Fragment storage f = fragments[fragmentId];
         require(f.active, "Fragment not active");
+        require(!hasBorrowed[borrowerOperatorId][fragmentId], "Already borrowed");
 
         // Credit line check: balance after deduction must not exceed the credit line
         uint256 effectiveLimit = _effectiveCreditLine(borrowerOperatorId);
@@ -114,9 +125,10 @@ contract MemoryLending {
             "Exceeds credit line"
         );
 
-        // Update balances
+        // Update balances and mark as borrowed
         balances[borrowerOperatorId] -= int256(f.priceCredits);
         balances[f.operatorId] += int256(f.priceCredits);
+        hasBorrowed[borrowerOperatorId][fragmentId] = true;
 
         emit FragmentBorrowed(
             fragmentId,
@@ -155,10 +167,38 @@ contract MemoryLending {
         return fragments[fragmentId];
     }
 
-    /// @dev Effective credit line = max(BASE_CREDIT_LINE, creditLines[operatorId])
-    ///      If setCreditLine was called with a higher value, use that; otherwise use base.
+    /// @notice Credit per reputation point from ERC-8004
+    uint256 public constant CREDIT_PER_REPUTATION = 2;
+
+    /// @dev Effective credit line = max(BASE_CREDIT_LINE, creditLines[operatorId]) + reputation bonus.
+    ///      Reputation bonus reads from the canonical ERC-8004 Reputation Registry
+    ///      using getSummary for the "memory-lend" tag. Each positive reputation point
+    ///      adds CREDIT_PER_REPUTATION to the credit line.
     function _effectiveCreditLine(uint256 operatorId) internal view returns (uint256) {
         uint256 custom = creditLines[operatorId];
-        return custom > BASE_CREDIT_LINE ? custom : BASE_CREDIT_LINE;
+        uint256 base = custom > BASE_CREDIT_LINE ? custom : BASE_CREDIT_LINE;
+
+        // Read reputation bonus from canonical ERC-8004 if operator has linked agents
+        uint256 reputationBonus = 0;
+        try operatorRegistry.getOperatorAgentCount(operatorId) returns (uint256 agentCount) {
+            if (agentCount > 0) {
+                // Get the first linked agent's reputation for "memory-lend" tag
+                uint256[] memory agents = operatorRegistry.getOperatorAgents(operatorId);
+                address[] memory empty = new address[](0);
+                try reputationRegistry.getSummary(agents[0], empty, "memory-lend", "") returns (
+                    uint64 count, int128 summaryValue, uint8
+                ) {
+                    if (count > 0 && summaryValue > 0) {
+                        reputationBonus = uint256(uint128(summaryValue)) * CREDIT_PER_REPUTATION;
+                    }
+                } catch {
+                    // Registry call failed — use base only
+                }
+            }
+        } catch {
+            // No agents linked — use base only
+        }
+
+        return base + reputationBonus;
     }
 }
