@@ -117,6 +117,7 @@ contract OperatorRegistryTest is Test {
         assertEq(agents.length, 2);
         assertEq(agents[0], agentId1);
         assertEq(agents[1], agentId2);
+        assertEq(registry.getOperatorAgentCount(opId), 2);
     }
 
     function test_linkAgentRevertsNotOperatorOwner() public {
@@ -163,5 +164,12 @@ contract OperatorRegistryTest is Test {
     function test_getOperatorByAgentRevertsNotLinked() public {
         vm.expectRevert("Agent not linked to any operator");
         registry.getOperatorByAgent(agentId1);
+    }
+
+    function test_getOperatorAgentCountDefaultsToZero() public {
+        vm.prank(alice);
+        uint256 opId = registry.registerOperator("https://alice.dev");
+
+        assertEq(registry.getOperatorAgentCount(opId), 0);
     }
 }

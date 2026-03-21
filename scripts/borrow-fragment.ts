@@ -2,7 +2,7 @@ import { keccak256, toHex } from "viem";
 import { writeFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { config, MEMORY_LENDING_ABI } from "./lib/config.js";
+import { config, MEMORY_LENDING_ABI, OPERATOR_REGISTRY_ABI } from "./lib/config.js";
 import { getPublicClient, getBorrowerWallet } from "./lib/wallet.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -57,7 +57,36 @@ async function main() {
 
   console.log(`  Current balance: ${balance} credits`);
   console.log(`  Credit line: ${creditLine} credits`);
-  console.log(`  Available to borrow: ${BigInt(creditLine) + BigInt(balance)} credits`);
+  const availableCredits = BigInt(creditLine) + BigInt(balance);
+  console.log(`  Available to borrow: ${availableCredits} credits`);
+
+  const agentCount = await publicClient.readContract({
+    address: config.operatorRegistryAddress,
+    abi: OPERATOR_REGISTRY_ABI,
+    functionName: "getOperatorAgentCount",
+    args: [config.borrowerOperatorId],
+  });
+
+  console.log(`  Linked agents: ${agentCount}`);
+
+  if (agentCount === 0n) {
+    console.error("Borrower operator has no linked agent.");
+    console.error(
+      "New operators must link at least one ERC-8004 agent before borrowing."
+    );
+    process.exit(1);
+  }
+
+  if (availableCredits < BigInt(fragment.priceCredits)) {
+    console.error("Insufficient borrowing capacity for this fragment.");
+    console.error(
+      "Ask the deployer/admin to raise this operator's credit line if needed:"
+    );
+    console.error(
+      `  npm run set-credit-line -- ${config.borrowerOperatorId} ${fragment.priceCredits}`
+    );
+    process.exit(1);
+  }
 
   // Step 3: Fetch content from URI
   console.log("\nFetching content from URI...");

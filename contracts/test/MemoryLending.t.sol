@@ -168,8 +168,7 @@ contract MemoryLendingTest is Test {
     }
 
     function test_borrowRevertsWhenOverCreditLine() public {
-        // Publish a fragment priced above the base credit line
-        uint256 expensivePrice = 6; // BASE_CREDIT_LINE is 5
+        uint256 expensivePrice = 6;
         vm.prank(contributor);
         lending.publishFragment(
             contributorOpId, contentHash, contentURI, domain, expensivePrice
@@ -180,10 +179,22 @@ contract MemoryLendingTest is Test {
         lending.borrowFragment(0, borrowerOpId);
     }
 
+    function test_borrowRevertsWhenOverGrantedCreditLine() public {
+        uint256 expensivePrice = 8;
+        vm.prank(contributor);
+        lending.publishFragment(
+            contributorOpId, contentHash, contentURI, domain, expensivePrice
+        );
+
+        vm.prank(deployer_);
+        lending.setCreditLine(borrowerOpId, 5);
+
+        vm.prank(borrower);
+        vm.expectRevert("Exceeds credit line");
+        lending.borrowFragment(0, borrowerOpId);
+    }
+
     function test_borrowMultipleUntilCreditLineExhausted() public {
-        // Publish two fragments at price 3 each. BASE_CREDIT_LINE = 5.
-        // First borrow: balance = -3 (OK, -3 >= -5)
-        // Second borrow: balance = -6 (FAIL, -6 < -5)
         vm.startPrank(contributor);
         lending.publishFragment(contributorOpId, contentHash, contentURI, domain, 3);
         lending.publishFragment(contributorOpId, keccak256("c2"), contentURI, domain, 3);
@@ -221,6 +232,23 @@ contract MemoryLendingTest is Test {
         vm.prank(borrower);
         vm.expectRevert("Fragment not active");
         lending.borrowFragment(0, borrowerOpId);
+    }
+
+    function test_borrowRevertsWhenOperatorHasNoLinkedAgent() public {
+        vm.prank(contributor);
+        lending.publishFragment(
+            contributorOpId, contentHash, contentURI, domain, priceCredits
+        );
+
+        vm.prank(borrower);
+        uint256 unlinkedOpId = opRegistry.registerOperator("https://borrower-unlinked.dev");
+
+        vm.prank(deployer_);
+        lending.setCreditLine(unlinkedOpId, 10);
+
+        vm.prank(borrower);
+        vm.expectRevert("Operator has no linked agent");
+        lending.borrowFragment(0, unlinkedOpId);
     }
 
     // ── setCreditLine ────────────────────────────────────────
@@ -287,11 +315,9 @@ contract MemoryLendingTest is Test {
     }
 
     function test_getCreditLineUsesBaseWhenCustomIsLower() public {
-        // Set a credit line below BASE_CREDIT_LINE
         vm.prank(deployer_);
         lending.setCreditLine(borrowerOpId, 2);
 
-        // Should still return BASE_CREDIT_LINE (the max)
         assertEq(lending.getCreditLine(borrowerOpId), 5);
     }
 

@@ -13,4 +13,5 @@ interface IOperatorRegistry {
     function linkAgent(uint256 operatorId, uint256 agentId) external;
     function getOperator(uint256 operatorId) external view returns (Operator memory);
     function getOperatorByAgent(uint256 agentId) external view returns (uint256 operatorId);
+    function getOperatorAgentCount(uint256 operatorId) external view returns (uint256);
 }

@@ -31,3 +31,7 @@ export function getContributorWallet(): WalletClient {
 export function getBorrowerWallet(): WalletClient {
   return getWalletClient(config.borrowerKey);
 }
+
+export function getDeployerWallet(): WalletClient {
+  return getWalletClient(config.deployerKey);
+}

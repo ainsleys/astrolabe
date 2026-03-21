@@ -111,6 +111,9 @@ async function main() {
   console.log("Add to your .env:");
   console.log(`  CONTRIBUTOR_OPERATOR_ID=${contributorOperatorId}`);
   console.log(`  BORROWER_OPERATOR_ID=${borrowerOperatorId}`);
+  console.log();
+  console.log("Next step:");
+  console.log(`  npm run set-credit-line -- ${borrowerOperatorId} 8`);
 }
 
 main().catch((err) => {

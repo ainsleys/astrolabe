@@ -2,178 +2,287 @@
 
 ## What this project is
 
-Lendable Agent Memory — a protocol for sharing operator corrections between AI agents, with on-chain attribution and compensation on Ethereum (Sepolia testnet).
+Synthesis is an agent-first marketplace experiment built around one concrete asset class: **steering-derived correction fragments**.
 
-The core thesis: when a human corrects an agent ("no, not that"), that correction is a transferable asset. Another agent facing a similar problem can borrow it, perform measurably better, and the original contributor gets paid and earns reputation.
+The immediate demo is a case study:
 
-This is a hackathon demo (Synthesis, ends 2026-03-22), not a production system.
+- Human steering is valuable data for open-source scaffolding and agent workflows.
+- That steering can be extracted from systems like Claude memories and Codex thread steering.
+- The resulting correction fragments can be published, borrowed, evaluated, and attributed on-chain.
 
-## Design decisions
+The broader product direction is larger than the demo. Correction fragments are the first asset class. Other agent-native exchanges, like task execution or reciprocal work commitments, may follow, but they are not the core proof in this repo today.
 
-These are resolved positions, not open questions. Reference them when making implementation choices.
+This is a hackathon project, not a production system.
 
-**Corrections are the signal.** Not all agent memory is worth sharing. `type: feedback` memories — human corrections of agent behavior — are the high-value subset. They are structurally analogous to preference pairs (what the agent did wrong → what the human wanted → why). The extraction pipeline filters for these specifically.
+## What the current repo proves
 
-**Reputation is per contributor-within-domain.** Not per-fragment (too granular, insufficient signal per fragment) and not per-contributor (too coarse, mixes unrelated domains). A contributor's aquaculture reputation is independent of their SaaS reputation. The eval harness groups results by domain and submits one feedback tx per domain.
+Be precise when describing the project. The current codebase is best understood as proving three things:
 
-**Inference-time augmentation, not training.** Borrowed corrections are prepended as context, not used for fine-tuning or RL. The structural analogy to RL (correction → improved behavior) holds, but operates at the context layer. No weights are updated.
+1. Steering and correction signals can be turned into reusable artifacts.
+2. Borrowed correction fragments can sometimes improve downstream task performance.
+3. An agent-native exchange loop can be scaffolded around those artifacts using operator identity, borrow receipts, evaluation, and reputation feedback.
 
-**Public goods with attribution, not paid access control.** The verify-before-pay flow means borrowers read content before paying. This is intentional. The micropayment compensates the contributor for labor that produced the correction, not for access to it. The analogy is tipping or citation royalties, not DRM.
+Do not over-claim beyond that. The repo does not yet prove a mature marketplace, a robust discovery system, or a durable reputation economy at scale.
 
-**ERC-8004 compatible pattern, not live integration.** The Sepolia demo uses mock registries implementing the ERC-8004 interface (`ownerOf`, `giveFeedback`). The canonical ERC-8004 registries are not deployed on Sepolia. The contract and scripts would work unchanged against canonical registries. State this plainly in any submission or demo.
+## Current state vs target state
 
-**Privacy requires human review.** `sanitize-fragment.ts` catches obvious PII (credentials, names, paths) via LLM review. But the most sensitive fragments are also the most valuable, and deciding what's safe to share requires human judgment. The review UI (`review/index.html`) exists for this purpose. Sanitization is a tool, not an enforcement boundary.
+The code in this repo currently implements the v5 direction more than the old Sepolia/ETH design:
 
-**Mixed eval results are honest results.** Fragments help where genuine knowledge gaps exist (aquaculture: +2.2 avg delta) and can hurt when the baseline is already strong (service-integration-verification: -3.0). This is why reputation scoring matters — contributors whose fragments consistently produce negative deltas accumulate low reputation.
+- Base chain in scripts and env config
+- operator-first identity via `OperatorRegistry.sol`
+- internal credit envelope in `MemoryLending.sol`
+- fragment borrowing without ETH payment
+- off-chain fragment storage with on-chain receipts
+- evaluation and reputation feedback as the quality loop
 
-## Architecture
+There are still gaps between the product thesis and the fully realized system:
+
+- discovery is still lightweight and mostly manual
+- reputation remains simpler than the long-term marketplace story
+- credit-line policy is demo-grade, not governance-complete
+- the demo focuses on correction fragments, not the full future asset surface
+
+When writing docs or explaining the demo, separate:
+
+- what the code does now
+- what the demo demonstrates
+- what the marketplace could support next
+
+## Design positions
+
+These are the repo's resolved positions unless a document explicitly marks something as exploratory.
+
+**Corrections are the signal.** Not all memory is worth sharing. The highest-value transferable unit is operator correction: what the agent was doing, what the operator changed, and why.
+
+**Claude memories and Codex steering are equivalent upstream sources.** Claude `type: feedback` files are direct correction artifacts. Codex contributes the same class of signal through explicit steer events, interrupt-and-redirect actions, and corrective user turns. Both should be distilled into the same fragment format.
+
+**This is a case study first, a marketplace second.** The demo should foreground the empirical claim that steering data can improve open-source scaffolding and adjacent agent tasks. The marketplace layer exists to show how those artifacts could be exchanged, attributed, and rewarded.
+
+**The marketplace is operator-first.** Agents are ephemeral. Operators persist. Publishing, borrowing, and balance accounting should accrue to operators, while agent-level ERC-8004 identity remains the canonical bridge for linked agents and reputation submission where required.
+
+**Fragments are the current exchange primitive.** Steering-derived correction fragments are the thing this repo actually supports end to end. Task execution, compute commitments, or other agent-native goods are future extensions, not the present proof.
+
+**The system uses a reciprocity ledger, not a token.** Credits are an internal accounting unit. They are not an asset, are not transferable, and are meant to encourage contribution back to the commons rather than to create speculation.
+
+**Public goods with attribution, not paid access control.** The verify-before-pay flow means borrowers read content before paying. The micropayment compensates the contributor for labor that produced the correction, not for access to it. The analogy is tipping or citation royalties, not DRM.
+
+**Inference-time augmentation, not training.** Borrowed corrections are prepended as context, not used for fine-tuning or RL. The structural analogy to RL still holds, but it operates at the context layer rather than in model weights.
+
+**ERC-8004 identity is the trust anchor.** Agent IDs are verified on-chain through the canonical registry, and reputation accrues per operator-within-domain. This is the basis for the trust and attribution story in the demo.
+
+**Content stays off-chain.** The contract stores identifiers, hashes, domains, prices, balances, and receipts. Fragment bytes remain off-chain and must be hash-verified before a borrow is recorded.
+
+**Evaluation is part of the product, not a side utility.** The quality loop is: borrow, use, evaluate, then submit feedback. If the demo loses the measured delta story, it loses its strongest claim.
+
+**Privacy requires a human checkpoint.** Sanitization helps, but human review is mandatory for anything publishable. Valuable fragments often contain the most sensitive operational detail.
+
+**Claims must match the current implementation.** Do not describe future architecture as already shipped. If a document mixes current state and target state, label those sections clearly.
+
+## System architecture
+
+### On-chain
 
 ```
-contracts/src/MemoryLending.sol    — publish, borrow, deactivate fragments (on-chain)
-contracts/src/Mock*.sol            — ERC-8004 mock registries (identity + reputation)
-scripts/publish-fragment.ts        — hash content, publish on-chain
-scripts/borrow-fragment.ts         — verify-before-pay, save borrow receipt
-scripts/evaluate.ts                — A/B eval: baseline vs augmented, blind judge
-scripts/give-feedback.ts           — submit reputation to ERC-8004
-scripts/extract-corrections.ts     — scan Claude memory dir for type:feedback
-scripts/sanitize-fragment.ts       — LLM-powered PII stripping
-scripts/serve-fragments.ts         — local HTTP server for dev
-scripts/lib/config.ts              — env loading, all ABIs
-scripts/lib/wallet.ts              — viem client factories
-scripts/lib/erc8004.ts             — identity check, giveFeedback wrapper
-fragments/                         — memory fragment markdown files
-borrows/                           — borrow receipts (gitignored, runtime artifact)
-eval/tasks.json                    — locked benchmark tasks
-eval/results/                      — eval output JSON files
-research/                          — concept docs, background research (read-only)
+contracts/src/OperatorRegistry.sol
+  - register operator identities
+  - link ERC-8004 agent IDs to operators
+  - resolve agent -> operator ownership
+
+contracts/src/MemoryLending.sol
+  - publish fragments under operator identity
+  - borrow fragments against a credit line
+  - require a linked agent before borrowing
+  - track operator balances
+  - emit on-chain borrow receipts
+  - allow deployer-managed credit line updates in v0
 ```
 
-## Setup from scratch
+### Off-chain
 
-Prerequisites: Node 20+, Foundry (forge/cast/anvil).
+```
+scripts/register-operator.ts
+  - register contributor and borrower operators
+  - link configured agent IDs to those operators
+
+scripts/publish-fragment.ts
+  - prepare fragment content
+  - hash it
+  - copy it into the served fragment set
+  - publish metadata on-chain
+
+scripts/borrow-fragment.ts
+  - read fragment metadata
+  - preflight linked-agent and credit eligibility
+  - fetch off-chain content
+  - verify hash before borrowing
+  - submit the borrow tx
+  - save a borrow receipt into borrows/
+
+scripts/set-credit-line.ts
+  - grant or adjust operator credit lines from the deployer wallet
+
+scripts/evaluate.ts
+  - run baseline vs augmented A/B evaluation
+  - prefer borrowed fragments when available
+  - compute per-domain deltas
+  - optionally submit on-chain reputation feedback
+
+scripts/give-feedback.ts
+  - push reputation-shaped feedback to the configured registry
+
+scripts/extract-corrections.ts
+  - extract correction fragments from Claude memory exports
+
+scripts/extract-steering-corrections.ts
+  - extract correction fragments from Codex steer events and corrective turns
+
+scripts/sanitize-fragment.ts
+  - strip or rewrite sensitive details before review
+
+scripts/serve-fragments.ts
+  - serve fragment files for local borrowing and dev flows
+```
+
+### Runtime artifacts
+
+```
+fragments/        - source and processed fragment markdown
+borrows/          - runtime borrow receipts
+eval/tasks.json   - locked evaluation tasks
+eval/results/     - saved evaluation outputs
+research/         - concept docs and background research
+review/           - review artifacts and proposal docs
+```
+
+## Fragment lifecycle
+
+```
+1. Capture steering or correction signals
+2. Extract candidate fragments
+3. Sanitize and review them
+4. Publish fragment metadata on-chain
+5. Borrow and hash-verify content
+6. Evaluate baseline vs augmented behavior
+7. Submit reputation feedback and update the commons signal
+```
+
+This lifecycle is the center of the repo. If you are deciding between polishing peripheral features and strengthening this loop, strengthen this loop.
+
+## Fresh clone setup
+
+Prerequisites:
+
+- Node 20+
+- Foundry (`forge`, `cast`, `anvil`)
+
+Clone with submodules:
 
 ```bash
-# Clone with submodules (forge-std)
 git clone --recurse-submodules https://github.com/ainsleys/synthesis.git
 cd synthesis
 npm install
+```
 
-# If already cloned without submodules:
+If the repo was cloned without submodules:
+
+```bash
 git submodule update --init --recursive
+```
 
-# Verify
+Verify the workspace:
+
+```bash
 npx tsc --noEmit
-cd contracts && forge test -vv && cd ..
-```
-
-### Foundry gotchas
-
-- Always run `forge` from `contracts/`, not the repo root.
-- `contracts/lib/forge-std` is a git submodule, gitignored locally. Without it, compilation fails on `forge-std/Test.sol`.
-- If compilation crashes or behaves oddly: `cd contracts && forge clean && forge test`.
-- `via_ir = true` is required because `MockReputationRegistry.giveFeedback` has 8 parameters (stack too deep without IR). This makes compilation slower (~4s vs <1s) but is necessary.
-
-### Environment
-
-Copy `.env.example` → `.env`. Key vars:
-
-| Variable | Required for | Notes |
-|----------|-------------|-------|
-| `SEPOLIA_RPC_URL` | all on-chain scripts | Alchemy or Infura |
-| `DEPLOYER_PRIVATE_KEY` | deploy | Also used as contributor |
-| `CONTRIBUTOR_PRIVATE_KEY` | publish | Same as deployer in demo |
-| `BORROWER_PRIVATE_KEY` | borrow, feedback | Separate wallet |
-| `MEMORY_LENDING_ADDRESS` | all scripts | From Deploy.s.sol output |
-| `IDENTITY_REGISTRY` | all scripts | Mock, from Deploy.s.sol output |
-| `REPUTATION_REGISTRY` | give-feedback | Mock, from Deploy.s.sol output |
-| `CONTRIBUTOR_AGENT_ID` | publish, feedback | From Deploy.s.sol output (1) |
-| `BORROWER_AGENT_ID` | borrow, feedback | From Deploy.s.sol output (2) |
-| `ANTHROPIC_API_KEY` | evaluate, sanitize | Claude API |
-
-### Deploy (only if contracts changed)
-
-```bash
 cd contracts
-source ../.env  # or: set -a && source ../.env && set +a
-forge script script/Deploy.s.sol --rpc-url "$SEPOLIA_RPC_URL" --broadcast -vv
+forge clean
+forge test --offline -vv
 ```
 
-Prints addresses for `MockIdentityRegistry`, `MockReputationRegistry`, `MemoryLending`, and agent IDs. Paste into `.env`.
+Notes:
 
-## Key flows
+- Run `forge` from `contracts/`, not the repo root.
+- `forge-std` is provided via submodule.
+- `--offline` avoids a Foundry network-backed trace path that can crash before assertions run in some environments.
 
-### Publish → Borrow → Evaluate → Feedback
+## Environment
+
+Copy `.env.example` to `.env` and fill in the current deployment values.
+
+Important variables:
+
+- `RPC_URL`
+- `DEPLOYER_PRIVATE_KEY`
+- `CONTRIBUTOR_PRIVATE_KEY`
+- `BORROWER_PRIVATE_KEY`
+- `MEMORY_LENDING_ADDRESS`
+- `OPERATOR_REGISTRY_ADDRESS`
+- `IDENTITY_REGISTRY`
+- `REPUTATION_REGISTRY`
+- `CONTRIBUTOR_OPERATOR_ID`
+- `BORROWER_OPERATOR_ID`
+- `CONTRIBUTOR_AGENT_ID`
+- `BORROWER_AGENT_ID`
+- `ANTHROPIC_API_KEY`
+
+## Core workflows
+
+### Register operators
 
 ```bash
-# 1. Start fragment server (background)
-npm run serve &
+npm run register-operator -- https://example.com/operator.json
+```
 
-# 2. Publish a fragment
-npm run publish-fragment -- fragments/feedback-logging-before-launch.md saas-engineering 0.001
+This registers contributor and borrower operators from the configured wallets and prints the operator IDs to copy into `.env`.
 
-# 3. Borrow it (saves receipt to borrows/)
+Operators start with the library-card base credit line of `5`. The deployer/admin can still raise an operator's limit when needed:
+
+```bash
+npm run set-credit-line -- <borrower-operator-id> 8
+```
+
+### Publish, borrow, and evaluate
+
+```bash
+npm run serve
+npm run publish-fragment -- fragments/feedback-logging-before-launch.md saas-engineering 1
+npm run set-credit-line -- <borrower-operator-id> 8
 npm run borrow-fragment -- 0
-
-# 4. Evaluate (uses borrow receipts if available, else local fragments)
 npm run evaluate
-
-# 5. Evaluate + submit on-chain reputation (only for borrowed fragments)
 npm run evaluate -- --feedback
 ```
 
-### Extract corrections from Claude memory
+### Extract from Claude memory
 
 ```bash
-# Dry run — see what would be extracted
 npm run extract -- ~/.claude/projects/YOUR-PROJECT/memory/ --dry-run
-
-# Extract (writes to fragments/extracted/)
 npm run extract -- ~/.claude/projects/YOUR-PROJECT/memory/
-
-# Sanitize (writes to fragments/sanitized/)
 npm run sanitize -- fragments/extracted/
 ```
 
-## Contract details
+### Extract from Codex steering
 
-`MemoryLending.sol` — single contract, no admin, no escrow.
+```bash
+npm run extract-steering -- exports/thread.json --domain developer-tooling --dry-run
+npm run extract-steering -- exports/ --domain developer-tooling
+npm run sanitize -- fragments/extracted-codex/
+```
 
-- `publishFragment(contributorAgentId, contentHash, contentURI, domain, priceWei)` — verifies caller owns agent ID via identity registry
-- `borrowFragment(fragmentId, borrowerAgentId)` payable — verifies caller owns agent ID, transfers ETH to contributor
-- `deactivateFragment(fragmentId)` — contributor only
-- `getFragment(fragmentId)` — view
+Treat explicit steer-button events as the highest-quality correction signal when available.
 
-Both `FragmentPublished` and `FragmentBorrowed` events include ERC-8004 agent IDs.
+## Documentation rules
 
-ERC-8004 identity check: `identityRegistry.ownerOf(agentId) == msg.sender` in both publish and borrow.
+When updating docs, README text, demo scripts, or submission material:
 
-## Eval harness details
+- Lead with the case-study claim: steering data is valuable and reusable.
+- Make clear that the current end-to-end demo is about correction fragments.
+- Frame the marketplace as agent-first and extensible, but do not imply that future asset classes are already implemented.
+- Separate current implementation from target architecture whenever both appear in the same document.
+- Prefer honest language like `the current demo shows`, `the current repo implements`, and `future extensions include`.
 
-`evaluate.ts` runs A/B comparison:
-1. For each task: generate response without fragments (baseline) and with fragments (augmented)
-2. Randomize presentation order for the judge
-3. Judge scores accuracy, specificity, actionability (1-10)
-4. Per-domain delta computed; `--feedback` submits per-domain reputation scores
+## Working norms
 
-Fragment loading priority: borrow receipts (`borrows/*.json`) > local files (`fragments/*.md`). `--feedback` only fires for borrow-sourced fragments.
-
-## Conventions
-
-- Fragments are markdown with YAML frontmatter (domain, type, format fields)
-- `type: feedback` memories are corrections — the high-value signal
-- `type: project/user/reference` memories are context — lower transfer value
-- Fragment filenames include a content hash prefix to prevent collisions
-- All prices in wei, all agent IDs are uint256 ERC-8004 token IDs
-- `.env` is gitignored; never commit secrets
-
-## Current Sepolia deployment
-
-| Contract | Address |
-|----------|---------|
-| MockIdentityRegistry | `0xccF3366cE323236e3b7905396fE30058A1B801e1` |
-| MockReputationRegistry | `0xb831Be94a83B581855B2802dE85E3f34aC4F5Fc2` |
-| MemoryLending | `0x7d817358A7eaCEB745A1Bb4C83dBE1123B46545D` |
-
-Contributor agent ID: 1, Borrower agent ID: 2.
-
-These are mock ERC-8004 registries — the canonical registries are not deployed on Sepolia.
+- Prefer small, verifiable loops over speculative mechanism design.
+- If a change weakens the borrow -> evaluate -> feedback story, treat that as a serious regression.
+- If a new doc or UI concept blurs the difference between proof, product direction, and future roadmap, tighten the framing.
+- Keep fragments portable. The fragment format will likely evolve, but it should remain model-agnostic and source-agnostic.
+- Favor evidence over elegance. Mixed or negative eval results are useful if they are honest.

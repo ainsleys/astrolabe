@@ -99,6 +99,10 @@ contract MemoryLending {
         // Verify caller owns the borrower operator
         IOperatorRegistry.Operator memory op = operatorRegistry.getOperator(borrowerOperatorId);
         require(op.owner == msg.sender, "Caller does not own operator");
+        require(
+            operatorRegistry.getOperatorAgentCount(borrowerOperatorId) > 0,
+            "Operator has no linked agent"
+        );
 
         Fragment storage f = fragments[fragmentId];
         require(f.active, "Fragment not active");

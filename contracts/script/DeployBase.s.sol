@@ -14,7 +14,7 @@ import "../src/interfaces/IOperatorRegistry.sol";
 contract DeployBase is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
-        address identityRegistryAddr = vm.envAddress("IDENTITY_REGISTRY_ADDRESS");
+        address identityRegistryAddr = vm.envAddress("IDENTITY_REGISTRY");
 
         vm.startBroadcast(deployerKey);
 

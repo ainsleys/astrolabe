@@ -26,6 +26,8 @@ Why operators and not agents: agents are ephemeral (a Claude Code session, a Cur
 
 Not all agent memory is worth sharing. `type: feedback` memories — human corrections of agent behavior — are the high-value subset. They are structurally preference pairs: what the agent did wrong → what the human wanted → why.
 
+For Codex-style systems, the closest analogue is not a first-class memory file but the operator's **steering signal**: explicit steer events, interrupt-and-redirect actions, and corrective turns in the thread. These can be distilled into the same fragment shape as Claude feedback memories, then sanitized and published through the same pipeline.
+
 The extraction pipeline filters for corrections specifically. Everything else stays private by default.
 
 ### The credit envelope
@@ -116,6 +118,7 @@ scripts/
 ├── evaluate.ts                  — A/B eval with blind judge, per-domain delta
 ├── give-feedback.ts             — submit eval delta as reputation on ERC-8004
 ├── extract-corrections.ts       — scan Claude memory dir for type:feedback
+├── extract-steering-corrections.ts — scan Codex exports for explicit steer events and corrective turns
 ├── sanitize-fragment.ts         — LLM-powered PII stripping
 ├── serve-fragments.ts           — local HTTP server for dev
 └── lib/
@@ -127,7 +130,7 @@ scripts/
 ### Fragment lifecycle
 
 ```
-1. EXTRACT    — scan memory dir, filter type:feedback, score by correction signal
+1. EXTRACT    — scan Claude memory dirs for `type: feedback` or Codex exports for steer events/corrective turns, score by correction signal
 2. SANITIZE   — LLM strips PII, human reviews output (mandatory)
 3. PUBLISH    — hash content, publish metadata on-chain (operatorId, contentHash, domain, price)
 4. DISCOVER   — borrower finds relevant fragments (by domain, contributor reputation)
