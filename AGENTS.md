@@ -2,7 +2,7 @@
 
 ## What this project is
 
-Synthesis is an agent-first marketplace experiment built around one concrete asset class: **steering-derived correction fragments**.
+Astrolabe is an agent-first marketplace experiment built around one concrete asset class: **steering-derived correction fragments**.
 
 The immediate demo is a case study:
 
@@ -10,19 +10,19 @@ The immediate demo is a case study:
 - That steering can be extracted from systems like Claude memories and Codex thread steering.
 - The resulting correction fragments can be published, borrowed, evaluated, and attributed on-chain.
 
-The broader product direction is larger than the demo. Correction fragments are the first asset class. Other agent-native exchanges, like task execution or reciprocal work commitments, may follow, but they are not the core proof in this repo today.
+The broader product direction is larger than the demo. Correction fragments are the first asset class. Other agent-native exchanges, like task execution or reciprocal work commitments, may follow, but they are not the core demonstration in this repo today.
 
 This is a hackathon project, not a production system.
 
-## What the current repo proves
+## What the current repo demonstrates
 
-Be precise when describing the project. The current codebase is best understood as proving three things:
+Be precise when describing the project. The current codebase is best understood as demonstrating three things:
 
 1. Steering and correction signals can be turned into reusable artifacts.
 2. Borrowed correction fragments can sometimes improve downstream task performance.
 3. An agent-native exchange loop can be scaffolded around those artifacts using operator identity, borrow receipts, evaluation, and reputation feedback.
 
-Do not over-claim beyond that. The repo does not yet prove a mature marketplace, a robust discovery system, or a durable reputation economy at scale.
+Do not over-claim beyond that. The repo does not yet demonstrate a mature marketplace, a robust discovery system, or a durable reputation economy at scale.
 
 ## Current state vs target state
 
@@ -56,11 +56,11 @@ These are the repo's resolved positions unless a document explicitly marks somet
 
 **Claude memories and Codex steering are equivalent upstream sources.** Claude `type: feedback` files are direct correction artifacts. Codex contributes the same class of signal through explicit steer events, interrupt-and-redirect actions, and corrective user turns. Both should be distilled into the same fragment format.
 
-**This is a case study first, a marketplace second.** The demo should foreground the empirical claim that steering data can improve open-source scaffolding and adjacent agent tasks. The marketplace layer exists to show how those artifacts could be exchanged, attributed, and rewarded.
+**This is a case study first, a marketplace second.** The demo should foreground the claim that steering data can improve open-source scaffolding and adjacent agent tasks, supported by measured eval deltas. The marketplace layer exists to show how those artifacts could be exchanged, attributed, and rewarded.
 
 **The marketplace is operator-first.** Agents are ephemeral. Operators persist. Publishing, borrowing, and balance accounting should accrue to operators, while agent-level ERC-8004 identity remains the canonical bridge for linked agents and reputation submission where required.
 
-**Fragments are the current exchange primitive.** Steering-derived correction fragments are the thing this repo actually supports end to end. Task execution, compute commitments, or other agent-native goods are future extensions, not the present proof.
+**Fragments are the current exchange primitive.** Steering-derived correction fragments are the thing this repo actually supports end to end. Task execution, compute commitments, or other agent-native goods are future extensions, not the present demonstration.
 
 **The system uses a reciprocity ledger, not a token.** Credits are an internal accounting unit. They are not an asset, are not transferable, and are meant to encourage contribution back to the commons rather than to create speculation.
 
@@ -302,7 +302,7 @@ When updating docs, README text, demo scripts, or submission material:
 | aquaculture | local fragments | +1.7 | No (not borrowed) |
 | saas-engineering | borrow receipts | -0.9 | Yes (4/10 on-chain) |
 
-The negative SaaS result is honest and expected — the baseline was already strong for one task. The system correctly submitted a low reputation score.
+The negative SaaS result is honest and expected — the baseline was already strong for one task. The system submitted a low reputation score accordingly.
 
 ## Working norms
 

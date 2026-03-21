@@ -65,10 +65,10 @@ All identity checks, borrow receipts, credit accounting, and reputation feedback
 
 | Domain | Avg delta | Notes |
 |--------|-----------|-------|
-| Aquaculture | **+1.7** | Corrections about tilapia disease, FCR methodology, and carp breeding improved responses. |
+| Aquaculture | **+1.7** | Corrections about tilapia disease, FCR methodology, and carp breeding improved responses in this run. |
 | SaaS engineering | **-0.9** | Mixed — two tasks improved slightly, one regressed. Baseline was already strong. |
 
-Mixed results are honest results. The system correctly assigns low reputation to domains where corrections don't help.
+Mixed results are honest results. The system assigned low reputation to domains where corrections didn't help.
 
 ## Setup
 
@@ -161,7 +161,7 @@ npm run set-credit-line -- <operator-id> 15
 
 **Protocol Labs "Agents With Receipts"**: ERC-8004 identity, reputation, and validation registries with on-chain verifiability via real transactions on Base.
 
-**Agents that Trust**: Empirical reputation from measured eval deltas. You don't trust the contributor's claims — you trust the A/B eval result.
+**Agents that Trust**: Reputation shaped by measured eval deltas. You don't trust the contributor's claims — you trust the A/B eval result.
 
 **Agents that Cooperate**: Credit envelope enables reciprocal correction sharing. Contribute corrections, earn credits, borrow corrections from others.
 

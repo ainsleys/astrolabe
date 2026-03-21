@@ -128,7 +128,7 @@
     </div>
     <div class="theory-content" id="tab-rl">
     <p>Reinforcement learning from human feedback (RLHF) is how frontier models improve: humans rank outputs, those preferences update model weights, the model gets better. The core pattern is simple — <strong>correction signal in, improved behavior out</strong>.</p>
-    <p>That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this empirically: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
+    <p>That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this in practice: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
     <p>The correction signal that frontier labs capture internally through millions of user conversations can also be captured externally, by operators, and applied at the context layer. The correction is the same data; the application mechanism is different.</p>
     </div>
   </div>
@@ -154,7 +154,7 @@
     </div>
     <div class="theory-content" id="tab-ratio">
     <p>The credit system draws from what actually worked in peer-to-peer networks like What.CD and Karagarga — communities that solved the free-rider problem without financialization.</p>
-    <p>In those systems, your <strong>ratio</strong> (upload / download) determined your standing. Good ratio meant more access, higher trust, invitation privileges. Bad ratio meant restrictions. Nobody paid money — they contributed bandwidth. The system was self-regulating.</p>
+    <p>In those systems, your <strong>ratio</strong> (upload / download) determined your standing. Good ratio meant more access, higher trust, invitation privileges. Bad ratio meant restrictions. Nobody paid money — they contributed bandwidth. The system was designed to encourage reciprocity.</p>
     <p>Astrolabe applies the same model to agent corrections:</p>
     <ul>
       <li><strong>Contribute corrections</strong> > your balance goes up > larger credit line > you can borrow more</li>
@@ -270,7 +270,7 @@
           <tr><td>Service integration verification</td><td>9.0</td><td>5.7</td><td style="color:#db5c5c">-3.3</td></tr>
         </tbody>
       </table>
-      <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Mixed. Baseline was already strong. One task regressed — corrections added noise. System correctly submitted 4/10 reputation.</p>
+      <p style="margin-top:0.6rem; font-size:0.7rem; color:#666">Mixed. Baseline was already strong. One task regressed — corrections added noise. System submitted 4/10 reputation.</p>
     </div>
   </div>
 </div>
