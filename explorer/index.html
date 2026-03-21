@@ -261,6 +261,64 @@
   </div>
 </div>
 
+<!-- Theory -->
+<div class="section">
+  <h2>Why this matters</h2>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>RL patterns work after training too</h3>
+    </div>
+    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
+      <p>Reinforcement learning from human feedback (RLHF) is how frontier models improve: humans rank outputs, those preferences update model weights, the model gets better. The core pattern is simple — <strong>correction signal in, improved behavior out</strong>.</p>
+      <p style="margin-top:0.75rem;">That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this empirically: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
+      <p style="margin-top:0.75rem;">This means the correction signal that frontier labs capture internally through millions of user conversations can also be captured externally, by operators, and applied at the context layer. The correction is the same data; the application mechanism is different.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Helping open systems compete</h3>
+    </div>
+    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
+      <p>Frontier labs have a closed loop that open-source can't replicate:</p>
+      <p style="margin-top:0.5rem; padding-left:1rem; border-left:2px solid #333; color:#aaa; font-style:italic;">User interactions → corrections → RLHF → better model → more users → more corrections</p>
+      <p style="margin-top:0.75rem;">This flywheel is proprietary. Anthropic's correction data from millions of Claude conversations is arguably more valuable than the base training data. Open-source models match base capabilities but can't match this correction loop because they don't operate the user-facing product.</p>
+      <p style="margin-top:0.75rem;">Synthesis creates a <strong>public correction layer</strong>. Corrections from any operator, using any model, flow into a shared pool with on-chain attribution. An open-source agent running Llama can borrow corrections that a Claude operator generated. The protocol is model-agnostic and lab-agnostic. No single entity controls the correction commons.</p>
+      <p style="margin-top:0.75rem;">This doesn't replace RLHF — some improvements fundamentally require weight updates. But for domain expertise gaps, inference-time correction is surprisingly effective, and a public correction pool gives every agent access to signal that was previously locked inside frontier lab pipelines.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>The ratio economy: lessons from private trackers</h3>
+    </div>
+    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
+      <p>The credit system draws from what actually worked in peer-to-peer file sharing networks like What.CD and Karagarga — communities that solved the free-rider problem without financialization.</p>
+      <p style="margin-top:0.75rem;">In those systems, your <strong>ratio</strong> (upload / download) determined your standing. Good ratio meant more access, higher trust, invitation privileges. Bad ratio meant restrictions. Nobody paid money — they contributed bandwidth. The system was self-regulating: generous participants got more out of it, free-riders gradually lost access.</p>
+      <p style="margin-top:0.75rem;">Synthesis applies the same model to agent corrections:</p>
+      <ul style="margin-top:0.5rem; margin-left:1.25rem; color:#aaa;">
+        <li style="margin-bottom:0.3rem"><strong>Contribute corrections</strong> → your balance goes up → larger credit line → you can borrow more</li>
+        <li style="margin-bottom:0.3rem"><strong>Only borrow</strong> → balance goes negative → credit line restricts → you need to contribute back</li>
+        <li style="margin-bottom:0.3rem"><strong>Reputation from measured deltas</strong> → high-quality contributors get extended credit, like trusted uploaders getting ratio bonuses</li>
+      </ul>
+      <p style="margin-top:0.75rem;">The key insight from those communities: the ratio isn't a price, it's a <strong>social contract</strong>. It says "I participate in this commons." Credits in Synthesis work the same way — they're not a currency to accumulate, they're a measure of reciprocity.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Liberating memory</h3>
+    </div>
+    <div class="card-body" style="font-size:0.9rem; color:#ccc;">
+      <p>Every agent system generates memory. Claude Code writes feedback files. Codex captures steering events. Cursor has shadow workspaces. Windsurf has flows. Karpathy's autoresearch showed that <code>program.md</code> — the accumulated human corrections — is the most valuable artifact in an autonomous research loop.</p>
+      <p style="margin-top:0.75rem;">All of this expertise is local. It lives on one machine, shaped by one operator, invisible to everyone else. There is no mechanism to share it, discover it, or compensate the person who developed it.</p>
+      <p style="margin-top:0.75rem;">We surveyed every major open-source agent memory project (A-Mem, MemOS, Acontext, Mem0, Letta). <strong>None of them publish actual memory content.</strong> Memory is treated as ephemeral and private — generated at runtime, never persisted as a shareable artifact. The infrastructure exists; the sharing doesn't.</p>
+      <p style="margin-top:0.75rem;">The incentive problem is real: why would an operator share corrections that cost them time and expertise to produce? The credit system answers this — contributing corrections earns you access to other operators' corrections. The more you give, the more you can take. Combined with on-chain attribution (your ERC-8004 identity is permanently linked to the corrections you contributed), there's both a practical incentive (credit) and a reputational one (provenance).</p>
+    </div>
+  </div>
+</div>
+
 <!-- Contracts -->
 <div class="section">
   <h2>Deployed contracts</h2>
