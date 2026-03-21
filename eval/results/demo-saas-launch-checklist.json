@@ -1,0 +1,32 @@
+{
+  "task": {
+    "id": "saas-launch-checklist",
+    "prompt": "You are building a WhatsApp-based B2B messaging product for small business owners. Create a production launch checklist covering the critical items that must be in place before going live, focusing on observability, API integration pitfalls, and common failure modes.",
+    "domain": "saas-engineering"
+  },
+  "baseScores": {
+    "accuracy": 9,
+    "specificity": 9,
+    "actionability": 9
+  },
+  "augScores": {
+    "accuracy": 8,
+    "specificity": 8,
+    "actionability": 8
+  },
+  "delta": -1,
+  "judge": {
+    "response_1": {
+      "accuracy": 9,
+      "specificity": 9,
+      "actionability": 9
+    },
+    "response_2": {
+      "accuracy": 8,
+      "specificity": 8,
+      "actionability": 8
+    },
+    "better": "1",
+    "explanation": "Response 1 provides more comprehensive coverage with specific technical details like webhook timeout requirements (20 seconds), concrete performance targets (99.9% uptime, <2s API response time), and deeper domain expertise around WhatsApp-specific failure modes like quality rating degradation and business account suspension."
+  }
+}

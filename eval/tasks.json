@@ -28,5 +28,20 @@
     "id": "service-integration-verification",
     "prompt": "A product has optional third-party service integrations (OCR, payment processing) that are conditionally enabled via environment variables. A developer claims a service is 'not connected' based on reading the codebase. What verification steps should be taken before making claims about production service state?",
     "domain": "saas-engineering"
+  },
+  {
+    "id": "biofouling-prevention-strategy",
+    "prompt": "Design an anti-fouling strategy for aquaculture net pens that avoids copper-based coatings. Focus on biological and material approaches, and explain which fouling organisms should be the primary targets and why.",
+    "domain": "materials-science"
+  },
+  {
+    "id": "hdpe-fermentation-vessel",
+    "prompt": "Evaluate whether HDPE (high-density polyethylene) tanks can replace stainless steel vessels for pilot-scale mesophilic fermentation (~300L, 25-37C). Address thermal limits, chemical compatibility, oxygen permeability, and sterilization approaches.",
+    "domain": "materials-science"
+  },
+  {
+    "id": "pha-marine-degradation",
+    "prompt": "Describe the degradation behavior of polyhydroxyalkanoates (PHAs) in marine environments. How does actual marine degradation differ from lab-grade composting studies, and what determines whether a PHA formulation will degrade meaningfully in cold ocean water?",
+    "domain": "materials-science"
   }
 ]
