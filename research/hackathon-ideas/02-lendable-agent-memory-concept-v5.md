@@ -442,3 +442,132 @@ Cross-theme alignment:
 6. **Compute commitment (v1)**: the credit system tracks borrow/contribute balance. A future version could add explicit work commitments — "I'll run a research task for you" — with fulfillment tracking on-chain. See v4 concept doc for the bilateral and pool models.
 
 7. **Agent-level reputation**: currently operator-only. Should individual agent IDs within an operator also carry reputation? Deferred — operator accountability is sufficient for v0.
+
+---
+
+## Appendix: Gap analysis (snapshot 2026-03-21)
+
+Current repo state vs v5 requirements. Organized by action type.
+
+### Must build (new files)
+
+| File | What | Complexity | Depends on |
+|------|------|------------|------------|
+| `contracts/src/OperatorRegistry.sol` | Register operators, link agent IDs (verified via identity registry), lookup by operator or agent | Small (~60 lines) | IIdentityRegistry interface (exists) |
+| `contracts/src/interfaces/IOperatorRegistry.sol` | Interface for OperatorRegistry | Trivial (~15 lines) | — |
+| `contracts/test/OperatorRegistry.t.sol` | Tests: register, link agent, ownership checks, duplicate prevention | Small | OperatorRegistry.sol |
+| `contracts/script/DeployBase.s.sol` | Deploy OperatorRegistry + MemoryLending to Base with canonical ERC-8004 addresses. Register operators, link agents. | Small | Both new contracts |
+| `scripts/register-operator.ts` | Register operator on-chain, link agent IDs, print operator ID | Small | OperatorRegistry ABI in config.ts |
+
+### Must modify (existing files)
+
+| File | Current | v5 requires | Complexity |
+|------|---------|-------------|------------|
+| `contracts/src/MemoryLending.sol` | agentId-based, ETH payable, no balance tracking | operatorId-based, credit pricing, `int256 balances` mapping, `uint256 creditLines` mapping, credit line check in borrowFragment, remove payable | **Major rewrite** |
+| `contracts/test/MemoryLending.t.sol` | Tests agentId + ETH flow, mock identity registry | Tests operatorId + credit flow, mock operator registry, credit line enforcement, balance updates | **Major rewrite** |
+| `scripts/lib/config.ts` | Sepolia RPC, agentId config, no operator registry ABI | Base RPC, operatorId config, add `OPERATOR_REGISTRY_ABI`, add `OPERATOR_REGISTRY_ADDRESS` env var | Moderate |
+| `scripts/lib/wallet.ts` | `import { sepolia } from "viem/chains"` | `import { base } from "viem/chains"` | Trivial (1 line) |
+| `scripts/publish-fragment.ts` | Uses `contributorAgentId`, `priceWei`, `parseEther` | Uses `contributorOperatorId`, `priceCredits` (plain uint256) | Small |
+| `scripts/borrow-fragment.ts` | ETH payment via `value: fragment.priceWei`, saves agentId in receipt | No ETH, reads credit balance/credit line for display, saves operatorId in receipt | Moderate |
+| `scripts/evaluate.ts` | agentId in evidence JSON, calls giveFeedback with agentId | operatorId in evidence, giveFeedback still uses agentId (ERC-8004 interface) but evidence references operatorId | Small |
+| `.env.example` | Sepolia vars, agentId vars | Base vars, operatorId vars, operator registry address | Small |
+| `contracts/foundry.toml` | Sepolia RPC endpoint only | Add Base RPC endpoint | Trivial |
+| `AGENTS.md` | Documents Sepolia deployment, agentId model, ETH payments | Needs full rewrite for v5: operators, credits, Base addresses | Moderate |
+| `package.json` | No register-operator script | Add `"register-operator"` script | Trivial |
+
+### Must redeploy
+
+| What | Where | Notes |
+|------|-------|-------|
+| OperatorRegistry.sol | Base | New contract |
+| MemoryLending.sol | Base | Rewritten contract — credit model, operator IDs |
+| Agent registration | Base canonical ERC-8004 Identity Registry | Need to understand canonical `registerAgent` function signature — may differ from our mock's |
+| Operator registration | Base (our OperatorRegistry) | After agent IDs exist on canonical registry |
+| Fragment republish | Base (our MemoryLending) | Re-publish test fragments with credit prices |
+
+Sepolia deployment stays as-is (no teardown needed). Base is a fresh deployment.
+
+### Must verify before building
+
+| Question | Why it matters | How to check |
+|----------|---------------|--------------|
+| Is canonical ERC-8004 Identity Registry live on Base? | If not, we need mocks again (defeats the purpose) | `cast code 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432 --rpc-url $BASE_RPC_URL` |
+| What is the canonical `registerAgent` function signature? | Our mock uses `registerAgent(string uri) → uint256`. Canonical may differ. | Fetch ABI from Basescan or call `cast abi 0x8004...` |
+| Is canonical ERC-8004 Reputation Registry live on Base? | Same reason | `cast code 0x8004BAa17C55a88189AE136b182e5fdA19dE9b63 --rpc-url $BASE_RPC_URL` |
+| Does the canonical Reputation Registry expose `getSummary`? | If yes, MemoryLending can read reputation on-chain to compute credit lines. If no, we need a trusted-caller pattern. | Check ABI |
+| Does the hackathon submission require deployment from the registered agent's address? | If yes, we prep everything and the registered agent deploys. If no, any address works. | Check synthesis.md skill file / submission rules |
+| Base gas funding | Need ETH on Base for deployer + contributor + borrower wallets | Fund via bridge or faucet |
+
+### Can keep unchanged
+
+| File/Component | Why |
+|---------------|-----|
+| `scripts/extract-corrections.ts` | Domain-agnostic, no chain dependency |
+| `scripts/sanitize-fragment.ts` | Domain-agnostic, no chain dependency |
+| `scripts/serve-fragments.ts` | Local dev server, chain-independent |
+| `scripts/lib/erc8004.ts` | `giveFeedback` wrapper calls canonical registry — same interface, just different address (from config) |
+| `eval/tasks.json` | Benchmark tasks are chain-independent |
+| `fragments/*.md` | Fragment content is chain-independent |
+| `contracts/src/interfaces/IIdentityRegistry.sol` | Same interface on canonical registry |
+| `contracts/src/interfaces/IReputationRegistry.sol` | Same interface on canonical registry |
+
+### Can remove
+
+| File | Why |
+|------|-----|
+| `contracts/src/MockIdentityRegistry.sol` | Replaced by canonical ERC-8004 on Base |
+| `contracts/src/MockReputationRegistry.sol` | Replaced by canonical ERC-8004 on Base |
+| `contracts/script/Deploy.s.sol` | Replaced by DeployBase.s.sol |
+
+Keep mocks in repo (useful for local testing), but they're not deployed on Base.
+
+### Decisions not yet made (non-blocking for build, but should be answered)
+
+| Decision | Options | Lean |
+|----------|---------|------|
+| Credit line constants (`BASE_CREDIT_LINE`, `CREDIT_PER_REPUTATION`) | 5 base + 2 per rep point (from v5 doc) vs other values | Start with v5 doc values, tune later |
+| Who can call `setCreditLine`? | Deployer-only (trusted caller) vs reputation oracle vs on-chain computation from registry | Deployer-only for v0 (honest about centralization) |
+| Should `via_ir` still be needed? | Only needed if MockReputationRegistry is compiled. If we keep mocks in src/ but don't deploy, forge still compiles them. | Keep `via_ir = true` or move mocks to `test/` directory |
+| Fragment re-pricing for credit model | Current fragments priced in ETH (0.001). Need credit prices. | Set 1-3 credits per fragment for demo |
+| Keep Sepolia deployment alongside Base? | Could maintain both for comparison | Yes, don't teardown. But AGENTS.md should document Base as primary. |
+
+### Build order (suggested)
+
+```
+Phase 1: Verify (30 min)
+├── Check canonical ERC-8004 on Base (cast code)
+├── Fetch canonical registerAgent ABI
+├── Fund Base wallets
+└── Confirm hackathon submission requirements
+
+Phase 2: Contracts (2-3 hrs)
+├── Write OperatorRegistry.sol + interface + tests
+├── Rewrite MemoryLending.sol (credit model) + tests
+├── forge test — all passing
+└── Write DeployBase.s.sol
+
+Phase 3: TypeScript (1-2 hrs)
+├── Update config.ts (Base chain, operator registry ABI, new env vars)
+├── Update wallet.ts (base chain)
+├── Write register-operator.ts
+├── Update publish-fragment.ts (operatorId, priceCredits)
+├── Update borrow-fragment.ts (no ETH, credit display)
+├── Update evaluate.ts (operatorId in evidence)
+├── npx tsc --noEmit — clean
+
+Phase 4: Deploy + test (1 hr)
+├── Deploy to Base
+├── Register agents on canonical ERC-8004
+├── Register operators, link agents
+├── Publish test fragments
+├── Borrow with credit deduction
+├── Run eval → submit reputation
+├── Verify credit balances
+
+Phase 5: Documentation (30 min)
+├── Update AGENTS.md
+├── Update README.md
+├── Update .env.example
+```
+
+Total estimated: ~5-7 hours of work. Parallelizable across contract and TypeScript tracks.
