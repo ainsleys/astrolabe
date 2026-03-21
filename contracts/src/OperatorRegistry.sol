@@ -64,4 +64,9 @@ contract OperatorRegistry is IOperatorRegistry {
     function getOperatorAgents(uint256 operatorId) external view returns (uint256[] memory) {
         return operatorAgents[operatorId];
     }
+
+    /// @notice Get the number of agent IDs linked to an operator
+    function getOperatorAgentCount(uint256 operatorId) external view returns (uint256) {
+        return operatorAgents[operatorId].length;
+    }
 }

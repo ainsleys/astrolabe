@@ -7,11 +7,13 @@
     "register-operator": "npx tsx scripts/register-operator.ts",
     "publish-fragment": "npx tsx scripts/publish-fragment.ts",
     "borrow-fragment": "npx tsx scripts/borrow-fragment.ts",
+    "set-credit-line": "npx tsx scripts/set-credit-line.ts",
     "give-feedback": "npx tsx scripts/give-feedback.ts",
     "evaluate": "npx tsx scripts/evaluate.ts",
     "serve": "npx tsx scripts/serve-fragments.ts",
     "sanitize": "npx tsx scripts/sanitize-fragment.ts",
-    "extract": "npx tsx scripts/extract-corrections.ts"
+    "extract": "npx tsx scripts/extract-corrections.ts",
+    "extract-steering": "npx tsx scripts/extract-steering-corrections.ts"
   },
   "dependencies": {
     "viem": "^2.21.0",
