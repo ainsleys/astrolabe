@@ -11,4 +11,5 @@ contracts/broadcast/
 
 # Runtime artifacts
 borrows/
-fragments/*-????????.md
+# Hash-suffixed copies created by publish-fragment.ts (content-addressed serving names)
+fragments/*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].md
