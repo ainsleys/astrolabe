@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./interfaces/IIdentityRegistry.sol";
+import "../../src/interfaces/IIdentityRegistry.sol";
 
 /// @title MockIdentityRegistry
 /// @notice Minimal ERC-8004 Identity Registry mock for Sepolia testing.
