@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Astrolabe — steering fragment case study</title>
+  <title>Astrolabe — multiplayer memory</title>
   <meta name="description" content="Astrolabe: a case study in sharing human corrections between agents, with on-chain attribution and measured impact on Base.">
-  <meta property="og:title" content="Astrolabe — steering fragment case study">
+  <meta property="og:title" content="Astrolabe — multiplayer memory">
   <meta property="og:description" content="AI agents make mistakes. When humans correct them, those corrections can become reusable fragments. Astrolabe prototypes publish, borrow, evaluate, and attribution on Base.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Astrolabe — steering fragment case study">
+  <meta name="twitter:title" content="Astrolabe — multiplayer memory">
   <meta name="twitter:description" content="A case study in turning human steering into reusable agent artifacts with on-chain attribution and measured impact.">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'IBM Plex Mono', monospace; background: #080808; color: #c8c8c8; line-height: 1.65; font-size: 14px; }
-
-  .container { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; }
+  body { font-family: 'IBM Plex Mono', monospace; background-color: #080808; color: #c8c8c8; line-height: 1.65; font-size: 14px; }
+  body::after { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none; background: url('astrolabe-bg.svg') no-repeat center -50px / 650px; filter: grayscale(1) brightness(0.8) invert(1); opacity: 0.08; }
+  .container { max-width: 920px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 1; }
 
   /* Header */
   header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid #222; margin-bottom: 0; }
@@ -130,8 +130,14 @@
 
 <header>
   <h1>Astrolabe</h1>
-  <div class="subtitle">steering fragment case study</div>
-  <p class="pitch">AI agents improve when humans correct them — but those corrections are trapped on one machine, invisible to everyone else. Astrolabe treats those corrections as a reusable artifact first, and prototypes an operator-to-operator exchange loop around them with <strong>on-chain attribution</strong> and <strong>measured impact</strong>.</p>
+  <div class="subtitle">multiplayer memory</div>
+  <p class="pitch">AI agents improve when humans correct them — but those corrections are trapped on one machine, invisible to everyone else. Astrolabe lets operators <strong>share corrections</strong> through a credit economy with <strong>on-chain attribution</strong> and <strong>reputation from measured impact</strong>.</p>
+  <div style="margin-top:0.9rem; display:flex; gap:1.5rem; flex-wrap:wrap; font-size:0.8rem;">
+    <span><span style="color:#5cdb7f; font-weight:700; font-size:1.1rem;">+1.93</span> <span style="color:#666">aquaculture</span></span>
+    <span><span style="color:#5cdb7f; font-weight:700; font-size:1.1rem;">+1.76</span> <span style="color:#666">materials sci</span></span>
+    <span><span style="color:#888; font-weight:700; font-size:1.1rem;">+0.13</span> <span style="color:#666">saas eng</span></span>
+    <span style="color:#555; font-size:0.7rem; align-self:center;">avg delta, blind A/B eval</span>
+  </div>
   <p class="tagline">A course-correction instrument for agents.</p>
   <span class="tag">Base mainnet + canonical ERC-8004</span>
 </header>
@@ -152,7 +158,7 @@
     </div>
     <div class="theory-content" id="tab-rl">
     <p>RLHF improves models by feeding human corrections into weight updates. The core pattern is: <strong>correction signal in, improved behavior out</strong>.</p>
-    <p>The same correction data can also be applied at inference time — not by updating weights, but by prepending it as context. The effect is local and ephemeral (it helps on the current task, it doesn't change the model globally), but in domains where the model has genuine knowledge gaps, the improvement is immediate and measurable. Our evals show +2.1 average improvement in aquaculture and +2.7 in materials science.</p>
+    <p>The same correction data can also be applied at inference time — not by updating weights, but by prepending it as context. The effect is local and ephemeral (it helps on the current task, it doesn't change the model globally), but in domains where the model has genuine knowledge gaps, the improvement is immediate and measurable. Repeated evals (5 runs per task, 95% CI) show +1.93 in aquaculture and +1.76 in materials science — both statistically significant.</p>
     <p>This is not RLHF. It's the same <em>data</em> (human corrections of agent behavior) applied through a different <em>mechanism</em> (context augmentation instead of gradient updates). The insight is that corrections don't need to be fed back into training to be useful — they can be shared directly between agents at the point of use.</p>
     </div>
   </div>
@@ -205,8 +211,8 @@
 
 <!-- Eval — current evidence -->
 <div class="section">
-  <h2>Current evidence</h2>
-  <p style="font-size:0.75rem; color:#777; margin-bottom:1rem; margin-top:-0.5rem;">Each task was run 5 times with a blind judge. 95% confidence intervals help separate real effects from judge variance. This is evidence for reusable correction fragments, not full proof of a mature marketplace.</p>
+  <h2>Does it work?</h2>
+  <p style="font-size:0.75rem; color:#777; margin-bottom:1rem; margin-top:-0.5rem;">Each task was run 5 times with a blind judge. 95% confidence intervals separate real effects from judge variance.</p>
 
   <div class="card">
     <div class="card-header"><h3>Aquaculture</h3><span class="badge badge-green">+1.93 avg, CI [+0.6, +3.3]</span></div>
@@ -575,7 +581,7 @@
 </script>
 
 <footer>
-  <p>Astrolabe — a steering fragment case study for agents. All data shown here refers to the current Base mainnet demo. <a href="https://github.com/ainsleys/synthesis">Source</a></p>
+  <p>Astrolabe — a multiplayer memory for agents. All data shown here refers to the current Base mainnet demo. <a href="https://github.com/ainsleys/synthesis">Source</a></p>
   <p style="margin-top:0.25rem">Corrections are public goods with attribution. Credits compensate labor, not access. Marketplace-scale outcomes remain a hypothesis under test.</p>
 </footer>
 

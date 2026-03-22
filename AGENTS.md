@@ -2,7 +2,7 @@
 
 ## What this project is
 
-Astrolabe is an agent-first marketplace experiment built around one concrete asset class: **steering-derived correction fragments**.
+Astrolabe is a case study in sharing steering-derived correction fragments between agent operators, with a prototype exchange layer for attribution and measured impact.
 
 The immediate demo is a case study:
 
@@ -13,6 +13,22 @@ The immediate demo is a case study:
 The broader product direction is larger than the demo. Correction fragments are the first asset class. Other agent-native exchanges, like task execution or reciprocal work commitments, may follow, but they are not the core demonstration in this repo today.
 
 This is a hackathon project, not a production system.
+
+## Claim hierarchy
+
+Use three levels of claim consistently across docs, UI, and demos:
+
+1. **Demonstrated here**
+   - steering and correction signals can be turned into reusable fragments
+   - some borrowed fragments measurably improve downstream tasks
+   - the publish -> borrow -> evaluate -> attribute loop can be anchored on-chain
+2. **Suggested by the demo**
+   - correction fragments may be a viable agent-native exchange primitive
+   - some corrections may transfer across model families
+3. **Not yet proven**
+   - a durable marketplace will form
+   - reputation and credits are economically robust
+   - the approach generalizes broadly across domains, operators, and models
 
 ## What the current repo demonstrates
 
@@ -68,7 +84,7 @@ These are the repo's resolved positions unless a document explicitly marks somet
 
 **Inference-time augmentation, not training.** Borrowed corrections are prepended as context, not used for fine-tuning or RL. The structural analogy to RL still holds, but it operates at the context layer rather than in model weights.
 
-**ERC-8004 identity is the trust anchor.** Agent IDs are verified on-chain through the canonical registry, and reputation accrues per operator-within-domain. This is the basis for the trust and attribution story in the demo.
+**ERC-8004 identity is the trust anchor.** Agent IDs are verified on-chain through the canonical registry, and reputation is submitted through canonical ERC-8004 primitives even though the product narrative is operator-first. This is the basis for the trust and attribution story in the demo.
 
 **Content stays off-chain.** The contract stores identifiers, hashes, domains, prices, balances, and receipts. Fragment bytes remain off-chain and must be hash-verified before a borrow is recorded.
 
@@ -94,7 +110,7 @@ contracts/src/MemoryLending.sol
   - require a linked agent before borrowing
   - track operator balances
   - emit on-chain borrow receipts
-  - allow deployer-managed credit line updates in v0
+  - derive credit line from a base allowance plus measured reputation
 ```
 
 ### Off-chain
@@ -270,6 +286,9 @@ When updating docs, README text, demo scripts, or submission material:
 - Frame the marketplace as agent-first and extensible, but do not imply that future asset classes are already implemented.
 - Separate current implementation from target architecture whenever both appear in the same document.
 - Prefer honest language like `the current demo shows`, `the current repo implements`, and `future extensions include`.
+- Use `demonstrates`, `suggests`, `initial evidence`, and `prototype` more often than `proves`.
+- If a claim depends on future discovery, pricing, governance, or anti-Sybil layers, label it as product direction rather than current capability.
+- Treat the extraction/sanitization/eval loop as the core product evidence; do not let marketplace language outrun that evidence.
 
 ## Current Base deployment
 
@@ -284,16 +303,11 @@ When updating docs, README text, demo scripts, or submission material:
 |----------|-----|
 | Contributor agent | 35279 |
 | Borrower agent | 35280 |
+| Autonomous agent | 35601 |
 | Contributor operator | 1 |
 | Borrower operator | 2 |
 
-## Eval results (latest run)
-
-| Domain | Source | Avg delta | Reputation submitted |
-|--------|--------|-----------|---------------------|
-| aquaculture | local fragments | +3.1 | No (not borrowed) |
-| materials-science | borrow receipts | +1.9 | Yes (7/10 on-chain) |
-| saas-engineering | borrow receipts | +0.6 | Yes (6/10 on-chain) |
+## Eval results
 
 ### Repeated evaluation with confidence intervals
 
@@ -305,13 +319,13 @@ Single eval runs can't distinguish real effects from LLM judge variance. A cold 
 | materials-science | +1.76 | [+1.1, +2.4] | Yes |
 | saas-engineering | +0.13 | [-1.2, +1.5] | No |
 
-7 of 9 individual tasks show statistically significant effects (6 positive, 1 negative). The service-integration-verification regression is the most consistent finding across all runs (mean -2.27, SD ±0.43, CI [-2.8, -1.7]) — corrections reliably hurt when the baseline is already strong. The system correctly captures this through its reputation mechanism.
+7 of 9 individual tasks show statistically significant effects (6 positive, 1 negative). The service-integration-verification regression is the most consistent finding across all runs (mean -2.27, SD ±0.43, CI [-2.8, -1.7]) — corrections reliably hurt when the baseline is already strong. The current system records that negative evidence rather than hiding it.
 
 The two non-significant tasks (carp breeding, WhatsApp debugging) have high variance across runs — the corrections sometimes help and sometimes don't, which the confidence interval honestly reflects.
 
 ### Cross-model evaluation via Venice
 
-A cold concept review identified cross-model transfer as "the acid test for the public correction layer thesis." To address this, the eval harness supports a `--venice` flag that routes all inference through Venice's no-data-retention API using Llama 3.3 70B instead of Claude Sonnet.
+A cold concept review identified cross-model transfer as an important next test for the public correction layer thesis. To address this, the eval harness supports a `--venice` flag that routes all inference through Venice's no-data-retention API using Llama 3.3 70B instead of Claude Sonnet.
 
 Results with corrections generated from Claude operator interactions, applied to Llama:
 
