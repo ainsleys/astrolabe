@@ -155,6 +155,27 @@ npx tsc --noEmit                          # TypeScript
 cd contracts && forge test --offline -vv   # Solidity (36 tests)
 ```
 
+### Judge Verification
+
+For a hackathon judge or reviewer who wants the fastest read-only proof path:
+
+```bash
+npm install
+npm run judge-check
+```
+
+`judge-check` verifies that the repo contains the core demo artifacts (`agent.json`, contracts, explorer, locked eval tasks/results, local fragments) and then performs a read-only Base check against the deployed `MemoryLending` contract to confirm the published fragment set is visible on-chain.
+
+Notes:
+
+- No private keys are required.
+- By default it uses the public Base RPC from `.env.example`.
+- If the public RPC rate-limits, rerun with your own provider:
+
+```bash
+RPC_URL=https://your-base-rpc.example npm run judge-check
+```
+
 ## Workflow
 
 ### 1. Discover available fragments

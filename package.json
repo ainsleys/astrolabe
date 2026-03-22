@@ -14,6 +14,7 @@
     "extract": "npx tsx scripts/extract-corrections.ts",
     "extract-steering": "npx tsx scripts/extract-steering-corrections.ts",
     "list-fragments": "npx tsx scripts/list-fragments.ts",
+    "judge-check": "npx tsx scripts/judge-check.ts",
     "demo": "npx tsx scripts/demo.ts",
     "agent-task": "npx tsx scripts/agent-task.ts"
   },
