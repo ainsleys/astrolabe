@@ -82,10 +82,10 @@ async function main() {
   if (availableCredits < BigInt(fragment.priceCredits)) {
     console.error("Insufficient borrowing capacity for this fragment.");
     console.error(
-      "Ask the deployer/admin to raise this operator's credit line if needed:"
+      "Credit lines start at 5 and grow with reputation. Publish corrections"
     );
     console.error(
-      `  npm run set-credit-line -- ${operatorId} ${fragment.priceCredits}`
+      "that help other agents to earn reputation and extend your credit line."
     );
     process.exit(1);
   }

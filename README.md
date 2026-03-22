@@ -152,11 +152,7 @@ npm run sanitize -- fragments/extracted/
 
 ### Credit management
 
-Operators start with 5 credits (enough to borrow 1-3 corrections). The deployer can raise credit lines:
-
-```bash
-npm run set-credit-line -- <operator-id> 15
-```
+Operators start with 5 credits (enough to borrow 1-3 corrections). Credit lines grow automatically as your corrections earn positive reputation from borrowers via the ERC-8004 Reputation Registry. Each reputation point adds 2 credits to your credit line.
 
 ## Hackathon track alignment
 

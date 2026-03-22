@@ -118,9 +118,6 @@ scripts/borrow-fragment.ts
   - submit the borrow tx
   - save a borrow receipt into borrows/
 
-scripts/set-credit-line.ts
-  - grant or adjust operator credit lines from the deployer wallet
-
 scripts/evaluate.ts
   - run baseline vs augmented A/B evaluation
   - prefer borrowed fragments when available
@@ -234,18 +231,13 @@ npm run register-operator -- https://example.com/operator.json
 
 This registers contributor and borrower operators from the configured wallets and prints the operator IDs to copy into `.env`.
 
-Operators start with the library-card base credit line of `5`. The deployer/admin can still raise an operator's limit when needed:
-
-```bash
-npm run set-credit-line -- <borrower-operator-id> 8
-```
+Operators start with a base credit line of 5. Credit lines grow automatically as your corrections earn positive reputation from borrowers via the ERC-8004 Reputation Registry (`CREDIT_PER_REPUTATION = 2` per reputation point). There is no admin override.
 
 ### Publish, borrow, and evaluate
 
 ```bash
 npm run serve
 npm run publish-fragment -- fragments/feedback-logging-before-launch.md saas-engineering 1
-npm run set-credit-line -- <borrower-operator-id> 8
 npm run borrow-fragment -- 0
 npm run evaluate
 npm run evaluate -- --feedback

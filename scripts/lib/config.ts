@@ -181,7 +181,7 @@ export const MEMORY_LENDING_ABI = [
       { name: "fragmentId", type: "uint256" },
     ],
     outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
+    stateMutability: "view",
   },
   {
     type: "event",

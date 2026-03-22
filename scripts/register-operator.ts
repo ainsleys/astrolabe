@@ -116,8 +116,7 @@ async function main() {
   console.log(`  CONTRIBUTOR_OPERATOR_ID=${contributorOperatorId}`);
   console.log(`  BORROWER_OPERATOR_ID=${borrowerOperatorId}`);
   console.log();
-  console.log("Next step:");
-  console.log(`  npm run set-credit-line -- ${borrowerOperatorId} 8`);
+  console.log("Credit lines start at 5 (BASE_CREDIT_LINE) and grow with reputation.");
 }
 
 main().catch((err) => {
