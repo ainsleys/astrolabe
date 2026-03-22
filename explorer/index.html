@@ -127,9 +127,9 @@
       <div class="title">theory/rl-after-training</div>
     </div>
     <div class="theory-content" id="tab-rl">
-    <p>Reinforcement learning from human feedback (RLHF) is how frontier models improve: humans rank outputs, those preferences update model weights, the model gets better. The core pattern is simple — <strong>correction signal in, improved behavior out</strong>.</p>
-    <p>That same pattern works at inference time, without touching weights. When an operator's correction is prepended as context, the agent avoids the same mistake — not because it was retrained, but because it was informed. Our eval results show this in practice: +1.7 average improvement in aquaculture tasks where the model had genuine knowledge gaps.</p>
-    <p>The correction signal that frontier labs capture internally through millions of user conversations can also be captured externally, by operators, and applied at the context layer. The correction is the same data; the application mechanism is different.</p>
+    <p>RLHF improves models by feeding human corrections into weight updates. The core pattern is: <strong>correction signal in, improved behavior out</strong>.</p>
+    <p>The same correction data can also be applied at inference time — not by updating weights, but by prepending it as context. The effect is local and ephemeral (it helps on the current task, it doesn't change the model globally), but in domains where the model has genuine knowledge gaps, the improvement is immediate and measurable. Our evals show +2.1 average improvement in aquaculture and +1.7 in materials science.</p>
+    <p>This is not RLHF. It's the same <em>data</em> (human corrections of agent behavior) applied through a different <em>mechanism</em> (context augmentation instead of gradient updates). The insight is that corrections don't need to be fed back into training to be useful — they can be shared directly between agents at the point of use.</p>
     </div>
   </div>
 
