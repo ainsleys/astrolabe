@@ -14,7 +14,8 @@
     "extract": "npx tsx scripts/extract-corrections.ts",
     "extract-steering": "npx tsx scripts/extract-steering-corrections.ts",
     "list-fragments": "npx tsx scripts/list-fragments.ts",
-    "demo": "npx tsx scripts/demo.ts"
+    "demo": "npx tsx scripts/demo.ts",
+    "agent-task": "npx tsx scripts/agent-task.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
