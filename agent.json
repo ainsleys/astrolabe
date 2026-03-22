@@ -53,6 +53,6 @@
     "alternative": "venice (llama-3.3-70b, no-data-retention)"
   },
   "logFormat": "agent-runs/{timestamp}-{domain}.json",
-  "source": "https://github.com/ainsleys/synthesis",
+  "source": "https://github.com/ainsleys/astrolabe",
   "entrypoint": "npx tsx scripts/agent-task.ts"
 }

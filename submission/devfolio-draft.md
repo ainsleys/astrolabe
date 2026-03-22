@@ -54,13 +54,22 @@ Every existing agent memory system (Mem0, Letta, MemOS, A-Mem) treats memory as 
 
 ## Links
 
-- **GitHub**: https://github.com/ainsleys/synthesis
-- **Explorer**: (host explorer/index.html or link to raw GitHub pages)
+- **GitHub**: https://github.com/ainsleys/astrolabe
+- **Explorer**: https://ainsleys.github.io/astrolabe
 - **Demo command**: `npm run demo` (quick) or `npm run agent-task` (autonomous)
 
 ## Tech Stack
 
 Solidity, Foundry, TypeScript, viem, Base, ERC-8004, Claude API, Venice API
+
+## Submission Metadata
+
+- **agentFramework**: other
+- **agentHarness**: Claude Code CLI + Codex
+- **model**: claude-opus-4-6, claude-sonnet-4-6 (eval), llama-3.3-70b (Venice cross-model)
+- **skills**: memory extraction, fragment sanitization, A/B evaluation, autonomous on-chain agent, cross-model transfer evaluation
+- **tools**: Foundry (Solidity), viem (TypeScript), Base RPC, Claude API, Venice API, ERC-8004 canonical registries
+- **helpfulResources**: EIP-8004 spec, Devfolio submission docs, synthesis.md
 
 ## Team
 

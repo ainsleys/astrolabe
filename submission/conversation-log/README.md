@@ -10,3 +10,4 @@ Human-agent collaboration logs for the Astrolabe hackathon project. All private 
 | `claude-opus-short.jsonl` | Claude Opus 4.6 | Short session |
 | `codex-session-1.jsonl` | Codex | Steering extraction, borrow eligibility, AGENTS.md updates (PR #4) |
 | `codex-session-2.jsonl` | Codex | Additional contributions |
+| `claude-opus-submission-prep.md` | Claude Opus 4.6 | Submission finalization: rules review, Devfolio form prep, final checklist |
