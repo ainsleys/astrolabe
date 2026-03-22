@@ -295,7 +295,19 @@ When updating docs, README text, demo scripts, or submission material:
 | materials-science | borrow receipts | +1.9 | Yes (7/10 on-chain) |
 | saas-engineering | borrow receipts | +0.6 | Yes (6/10 on-chain) |
 
-Corrections help most where genuine domain knowledge gaps exist. The service-integration-verification task consistently regresses (baseline already strong), but is outweighed by strong improvements on the other two SaaS tasks. Per-domain reputation scores reflect the actual measured deltas.
+### Repeated evaluation with confidence intervals
+
+Single eval runs can't distinguish real effects from LLM judge variance. A cold concept review flagged this: "a skeptic can dismiss every result as judge variance." To address this, each task was run 5 times independently (`scripts/eval-repeated.ts`). Full results in `eval/results/repeated-eval.json`.
+
+| Domain | Mean delta | 95% CI | Significant? |
+|--------|-----------|--------|-------------|
+| aquaculture | +1.93 | [+0.6, +3.3] | Yes |
+| materials-science | +1.76 | [+1.1, +2.4] | Yes |
+| saas-engineering | +0.13 | [-1.2, +1.5] | No |
+
+7 of 9 individual tasks show statistically significant effects (6 positive, 1 negative). The service-integration-verification regression is the most consistent finding across all runs (mean -2.27, SD ±0.43, CI [-2.8, -1.7]) — corrections reliably hurt when the baseline is already strong. The system correctly captures this through its reputation mechanism.
+
+The two non-significant tasks (carp breeding, WhatsApp debugging) have high variance across runs — the corrections sometimes help and sometimes don't, which the confidence interval honestly reflects.
 
 ## Known limitations
 
@@ -304,8 +316,6 @@ These are acknowledged gaps between the demo and a production system:
 1. **Single-model evaluation.** Baseline, augmented, and judge responses all use Claude Sonnet. Cross-model evaluation (corrections from Claude applied to Llama, judged by GPT) would more convincingly demonstrate the "public correction layer" thesis. Not tested due to time constraints.
 
 2. **Two-operator demo.** Both operators are controlled by the same developer. Multi-party dynamics (price discovery, adversarial behavior, Sybil resistance) are untested. A second independent operator would strengthen the demonstration.
-
-3. **No statistical confidence intervals.** Eval deltas are 1-3 points on a 10-point scale. LLM-as-judge variance is often 1-2 points. Repeated trials and confidence intervals would be needed to claim statistical significance. The current results are indicative, not conclusive.
 
 4. **Borrower-run evaluation.** The borrower runs the eval and self-reports. A borrower could suppress negative results. The production path is an independent eval oracle, potentially in a TEE.
 
