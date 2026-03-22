@@ -17,9 +17,10 @@
     "demo": "npx tsx scripts/demo.ts"
   },
   "dependencies": {
-    "viem": "^2.21.0",
+    "@anthropic-ai/sdk": "^0.39.0",
     "dotenv": "^16.4.0",
-    "@anthropic-ai/sdk": "^0.39.0"
+    "openai": "^6.32.0",
+    "viem": "^2.21.0"
   },
   "devDependencies": {
     "tsx": "^4.19.0",

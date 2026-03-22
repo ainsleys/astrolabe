@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import {
   readFileSync,
   writeFileSync,
@@ -72,9 +73,59 @@ const RESULTS_DIR = join(__dirname, "..", "eval", "results");
 const FRAGMENTS_DIR = join(__dirname, "..", "fragments");
 const BORROWS_DIR = join(__dirname, "..", "borrows");
 
-const MODEL = "claude-sonnet-4-20250514";
-const JUDGE_MODEL = "claude-sonnet-4-20250514";
 const MAX_JUDGE_RETRIES = 3;
+
+// --- Provider abstraction ---
+
+type Provider = "anthropic" | "venice";
+
+function getProvider(): Provider {
+  const flag = process.argv.find(a => a.startsWith("--provider="));
+  if (flag) return flag.split("=")[1] as Provider;
+  if (process.argv.includes("--venice")) return "venice";
+  return "anthropic";
+}
+
+function getModelForProvider(provider: Provider): string {
+  return provider === "venice" ? "llama-3.3-70b" : "claude-sonnet-4-20250514";
+}
+
+async function llmCall(
+  provider: Provider,
+  anthropicClient: Anthropic | null,
+  veniceClient: OpenAI | null,
+  systemPrompt: string | undefined,
+  userPrompt: string,
+  maxTokens: number
+): Promise<string> {
+  const model = getModelForProvider(provider);
+
+  if (provider === "venice" && veniceClient) {
+    const messages: OpenAI.ChatCompletionMessageParam[] = [];
+    if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+    messages.push({ role: "user", content: userPrompt });
+
+    const resp = await veniceClient.chat.completions.create({
+      model,
+      max_tokens: maxTokens,
+      messages,
+    });
+    return resp.choices[0]?.message?.content || "";
+  }
+
+  if (anthropicClient) {
+    const params: Anthropic.MessageCreateParams = {
+      model,
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: userPrompt }],
+    };
+    if (systemPrompt) params.system = systemPrompt;
+    const resp = await anthropicClient.messages.create(params);
+    return resp.content.find(b => b.type === "text")?.text || "";
+  }
+
+  throw new Error("No LLM client available");
+}
 
 // --- Fragment loading ---
 
@@ -146,34 +197,12 @@ function loadFragmentsForDomain(domain: string): FragmentSource | null {
   return null;
 }
 
-// --- LLM calls ---
-
-async function callClaude(
-  client: Anthropic,
-  systemPrompt: string | undefined,
-  userPrompt: string
-): Promise<string> {
-  const messages: Anthropic.MessageParam[] = [
-    { role: "user", content: userPrompt },
-  ];
-
-  const params: Anthropic.MessageCreateParams = {
-    model: MODEL,
-    max_tokens: 2048,
-    messages,
-  };
-
-  if (systemPrompt) {
-    params.system = systemPrompt;
-  }
-
-  const response = await client.messages.create(params);
-  const textBlock = response.content.find((b) => b.type === "text");
-  return textBlock?.text || "";
-}
+// --- LLM calls (use provider abstraction) ---
 
 async function callJudge(
-  client: Anthropic,
+  provider: Provider,
+  anthropicClient: Anthropic | null,
+  veniceClient: OpenAI | null,
   taskPrompt: string,
   response1: string,
   response2: string
@@ -198,14 +227,7 @@ Respond with ONLY valid JSON, no other text before or after:
 {"response_1":{"accuracy":N,"specificity":N,"actionability":N},"response_2":{"accuracy":N,"specificity":N,"actionability":N},"better":"1" or "2","explanation":"one sentence"}`;
 
   for (let attempt = 0; attempt < MAX_JUDGE_RETRIES; attempt++) {
-    const response = await client.messages.create({
-      model: JUDGE_MODEL,
-      max_tokens: 1024,
-      messages: [{ role: "user", content: judgePrompt }],
-    });
-
-    const text =
-      response.content.find((b) => b.type === "text")?.text || "";
+    const text = await llmCall(provider, anthropicClient, veniceClient, undefined, judgePrompt, 1024);
 
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -252,14 +274,31 @@ function avg(scores: JudgeScores): number {
 // --- Main ---
 
 async function main() {
-  if (!config.anthropicApiKey) {
-    console.error("ANTHROPIC_API_KEY is required for evaluation");
-    process.exit(1);
-  }
-
-  const client = new Anthropic({ apiKey: config.anthropicApiKey });
+  const provider = getProvider();
   const tasks = loadTasks();
   const submitOnChain = process.argv.includes("--feedback");
+
+  let anthropicClient: Anthropic | null = null;
+  let veniceClient: OpenAI | null = null;
+
+  if (provider === "venice") {
+    const veniceKey = process.env.VENICE_API_KEY;
+    if (!veniceKey) {
+      console.error("VENICE_API_KEY is required for --venice provider");
+      process.exit(1);
+    }
+    veniceClient = new OpenAI({ apiKey: veniceKey, baseURL: "https://api.venice.ai/api/v1" });
+    console.log(`Provider: Venice (no-data-retention inference)`);
+    console.log(`Model: ${getModelForProvider(provider)}\n`);
+  } else {
+    if (!config.anthropicApiKey) {
+      console.error("ANTHROPIC_API_KEY is required for evaluation");
+      process.exit(1);
+    }
+    anthropicClient = new Anthropic({ apiKey: config.anthropicApiKey });
+    console.log(`Provider: Anthropic`);
+    console.log(`Model: ${getModelForProvider(provider)}\n`);
+  }
 
   console.log(`Loaded ${tasks.length} evaluation tasks\n`);
 
@@ -293,15 +332,15 @@ async function main() {
 
     // Generate baseline response (no fragment)
     console.log("  Generating baseline response...");
-    const baselineResponse = await callClaude(client, undefined, task.prompt);
+    const baselineResponse = await llmCall(provider, anthropicClient, veniceClient, undefined, task.prompt, 2048);
 
     // Generate augmented response (with fragment as system context)
     console.log("  Generating augmented response...");
     const augmentedSystemPrompt = `You have access to the following domain expertise. Use it to inform your response.\n\n---\n${frag.content}\n---`;
-    const augmentedResponse = await callClaude(
-      client,
+    const augmentedResponse = await llmCall(
+      provider, anthropicClient, veniceClient,
       augmentedSystemPrompt,
-      task.prompt
+      task.prompt, 2048
     );
 
     // Randomize order for judge
@@ -315,7 +354,7 @@ async function main() {
 
     // Run judge
     console.log("  Running judge...");
-    const judgeResult = await callJudge(client, task.prompt, resp1, resp2);
+    const judgeResult = await callJudge(provider, anthropicClient, veniceClient, task.prompt, resp1, resp2);
 
     // Map scores back to baseline/augmented
     const augmentedScores =
