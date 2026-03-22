@@ -309,11 +309,29 @@ Single eval runs can't distinguish real effects from LLM judge variance. A cold 
 
 The two non-significant tasks (carp breeding, WhatsApp debugging) have high variance across runs — the corrections sometimes help and sometimes don't, which the confidence interval honestly reflects.
 
+### Cross-model evaluation via Venice
+
+A cold concept review identified cross-model transfer as "the acid test for the public correction layer thesis." To address this, the eval harness supports a `--venice` flag that routes all inference through Venice's no-data-retention API using Llama 3.3 70B instead of Claude Sonnet.
+
+Results with corrections generated from Claude operator interactions, applied to Llama:
+
+| Domain | Claude delta | Llama delta | Pattern matches? |
+|--------|------------|-------------|-----------------|
+| aquaculture | +1.93 | +1.4 | Yes |
+| materials-science | +1.76 | +0.4 | Weaker but same direction |
+| saas-engineering | +0.13 | +0.1 | Both near zero |
+
+The service-integration-verification regression reproduces on Llama (-2.0 vs -2.27 on Claude) — the negative transfer is not model-specific but content-specific.
+
+This provides initial evidence that corrections are transferable across model families, not just within Claude. The deltas are smaller on Llama (expected — corrections were authored in a Claude context), but the direction is consistent.
+
+The Venice integration also adds a privacy property: fragment content is evaluated through a no-data-retention inference provider, meaning correction content is never persisted by the inference service.
+
 ## Known limitations
 
 These are acknowledged gaps between the demo and a production system:
 
-1. **Single-model evaluation.** Baseline, augmented, and judge responses all use Claude Sonnet. Cross-model evaluation (corrections from Claude applied to Llama, judged by GPT) would more convincingly demonstrate the "public correction layer" thesis. Not tested due to time constraints.
+1. **Cross-model evaluation is preliminary.** Venice/Llama eval shows the same direction as Claude but with smaller deltas (single run, no confidence intervals). More rigorous cross-model testing with repeated trials would strengthen the evidence.
 
 2. **Two-operator demo.** Both operators are controlled by the same developer. Multi-party dynamics (price discovery, adversarial behavior, Sybil resistance) are untested. A second independent operator would strengthen the demonstration.
 

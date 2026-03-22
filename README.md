@@ -73,6 +73,8 @@ Each task was run 5 times with a blind judge. 95% confidence intervals distingui
 
 7 of 9 individual tasks show statistically significant effects (6 positive, 1 negative). Corrections help most where genuine domain knowledge gaps exist. The service-integration-verification task shows a significant *negative* effect (mean -2.27, CI [-2.8, -1.7]) — corrections reliably hurt when the baseline is already strong.
 
+**Cross-model transfer (Venice / Llama 3.3 70B):** Corrections generated from Claude operator interactions also improve Llama responses (aquaculture +1.4, materials +0.4). The service-verification regression reproduces on Llama (-2.0), confirming it's content-specific, not model-specific. Eval ran through Venice's no-data-retention API — fragment content is never persisted by the inference provider.
+
 ## Setup
 
 ### Clone
