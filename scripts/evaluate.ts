@@ -131,10 +131,19 @@ async function llmCall(
 
 function loadBorrowReceipts(domain: string): BorrowReceipt[] {
   if (!existsSync(BORROWS_DIR)) return [];
+  const currentContract = process.env.MEMORY_LENDING_ADDRESS?.toLowerCase();
   return readdirSync(BORROWS_DIR)
     .filter((f) => f.endsWith(".json"))
     .map((f) => JSON.parse(readFileSync(join(BORROWS_DIR, f), "utf-8")) as BorrowReceipt)
-    .filter((r) => r.domain === domain);
+    .filter((r) => {
+      if (r.domain !== domain) return false;
+      // Skip receipts from prior deployments if contractAddress is present
+      if (currentContract && r.contractAddress &&
+          r.contractAddress.toLowerCase() !== currentContract) {
+        return false;
+      }
+      return true;
+    });
 }
 
 function loadLocalFragments(domain: string): { content: string; hashes: string[] } | null {
@@ -473,17 +482,20 @@ async function main() {
       const wallet = getBorrowerWallet();
       const publicClient = getPublicClient();
 
-      // Submit feedback per contributor, using their actual agent IDs from receipts
+      // Submit feedback per contributor, using ONE agent per operator to avoid
+      // credit inflation (contract sums reputation across all linked agents)
       for (const [opId, agentIds] of frag.contributors) {
         if (agentIds.length === 0) {
           console.log(`    Operator ${opId}: no agent IDs in receipt, skipping feedback`);
           continue;
         }
 
-        // Submit feedback for each agent ID linked to this contributor
-        for (const agentIdStr of agentIds) {
+        // Use only the first agent ID — submitting to multiple agents for the
+        // same operator would multiply the reputation bonus in _effectiveCreditLine
+        const agentIdStr = agentIds[0];
+        {
           const agentId = BigInt(agentIdStr);
-          console.log(`    Feedback → agent #${agentId} (operator ${opId})`);
+          console.log(`    Feedback → agent #${agentId} (operator ${opId}, 1 of ${agentIds.length} agents)`);
 
           try {
             const hash = await giveFeedback(

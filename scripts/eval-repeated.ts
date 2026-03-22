@@ -101,10 +101,30 @@ function stddev(arr: number[]): number {
   return Math.sqrt(arr.reduce((sum, x) => sum + (x - m) ** 2, 0) / (arr.length - 1));
 }
 
+// t-values for 95% CI (two-tailed) by degrees of freedom
+const T_VALUES: Record<number, number> = {
+  1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571,
+  6: 2.447, 7: 2.365, 8: 2.306, 9: 2.262, 10: 2.228,
+  11: 2.201, 12: 2.179, 13: 2.160, 14: 2.145, 15: 2.131,
+  20: 2.086, 25: 2.060, 30: 2.042, 40: 2.021, 60: 2.000,
+  120: 1.980,
+};
+
+function tValue(df: number): number {
+  if (T_VALUES[df]) return T_VALUES[df];
+  // Find closest df in table
+  const keys = Object.keys(T_VALUES).map(Number).sort((a, b) => a - b);
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (df >= keys[i] && df < keys[i + 1]) return T_VALUES[keys[i + 1]];
+  }
+  return 1.96; // large-sample approximation
+}
+
 function ci95(arr: number[]): [number, number] {
   const m = mean(arr);
+  const df = arr.length - 1;
   const se = stddev(arr) / Math.sqrt(arr.length);
-  const t = 2.776; // t-value for 95% CI with df=4 (5 runs)
+  const t = tValue(df);
   return [m - t * se, m + t * se];
 }
 
