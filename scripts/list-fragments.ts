@@ -1,4 +1,3 @@
-import { parseAbiItem } from "viem";
 import { config, MEMORY_LENDING_ABI } from "./lib/config.js";
 import { getPublicClient } from "./lib/wallet.js";
 
@@ -8,6 +7,17 @@ interface FragmentInfo {
   domain: string;
   priceCredits: bigint;
   contentHash: string;
+  active: boolean;
+}
+
+interface FragmentContractResult {
+  operatorId: bigint;
+  contributor: `0x${string}`;
+  contentHash: string;
+  contentURI: string;
+  domain: string;
+  priceCredits: bigint;
+  createdAt: bigint;
   active: boolean;
 }
 
@@ -29,20 +39,29 @@ async function main() {
 
   console.log(`${nextId} fragment(s) published\n`);
 
-  // Fetch all fragments
-  const fragments: FragmentInfo[] = [];
-  for (let i = 0n; i < nextId; i++) {
-    const f = await publicClient.readContract({
+  const fragmentIds = Array.from(
+    { length: Number(nextId) },
+    (_, i) => BigInt(i)
+  );
+  const fragmentResults = await publicClient.multicall({
+    allowFailure: false,
+    contracts: fragmentIds.map((fragmentId) => ({
       address: config.memoryLendingAddress,
       abi: MEMORY_LENDING_ABI,
       functionName: "getFragment",
-      args: [i],
-    });
+      args: [fragmentId],
+    })),
+  }) as unknown as FragmentContractResult[];
 
+  // Fetch all fragments in a single multicall to avoid public RPC rate limits
+  const fragments: FragmentInfo[] = [];
+  for (let i = 0; i < fragmentResults.length; i++) {
+    const fragmentId = fragmentIds[i];
+    const f = fragmentResults[i];
     if (domainFilter && f.domain !== domainFilter) continue;
 
     fragments.push({
-      fragmentId: i,
+      fragmentId,
       operatorId: f.operatorId,
       domain: f.domain,
       priceCredits: f.priceCredits,
@@ -117,6 +136,13 @@ async function main() {
 }
 
 main().catch((err) => {
+  const details =
+    err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  if (details.includes("over rate limit")) {
+    console.error(
+      "RPC rate limit hit. Set RPC_URL to your own Base provider and try again."
+    );
+  }
   console.error(err);
   process.exit(1);
 });

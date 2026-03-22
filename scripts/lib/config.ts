@@ -12,26 +12,54 @@ function optionalEnv(name: string, fallback: string): string {
 }
 
 export const config = {
-  rpcUrl: requireEnv("RPC_URL"),
-  deployerKey: requireEnv("DEPLOYER_PRIVATE_KEY") as `0x${string}`,
-  contributorKey: requireEnv("CONTRIBUTOR_PRIVATE_KEY") as `0x${string}`,
-  borrowerKey: requireEnv("BORROWER_PRIVATE_KEY") as `0x${string}`,
-  memoryLendingAddress: requireEnv("MEMORY_LENDING_ADDRESS") as `0x${string}`,
-  operatorRegistryAddress: requireEnv("OPERATOR_REGISTRY_ADDRESS") as `0x${string}`,
-  identityRegistry: optionalEnv(
-    "IDENTITY_REGISTRY",
-    "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
-  ) as `0x${string}`,
-  reputationRegistry: optionalEnv(
-    "REPUTATION_REGISTRY",
-    "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
-  ) as `0x${string}`,
-  contributorAgentId: BigInt(optionalEnv("CONTRIBUTOR_AGENT_ID", "0")),
-  borrowerAgentId: BigInt(optionalEnv("BORROWER_AGENT_ID", "0")),
-  contributorOperatorId: BigInt(optionalEnv("CONTRIBUTOR_OPERATOR_ID", "0")),
-  borrowerOperatorId: BigInt(optionalEnv("BORROWER_OPERATOR_ID", "0")),
-  anthropicApiKey: optionalEnv("ANTHROPIC_API_KEY", ""),
-  fragmentServerPort: parseInt(optionalEnv("FRAGMENT_SERVER_PORT", "3000")),
+  get rpcUrl() {
+    return requireEnv("RPC_URL");
+  },
+  get deployerKey() {
+    return requireEnv("DEPLOYER_PRIVATE_KEY") as `0x${string}`;
+  },
+  get contributorKey() {
+    return requireEnv("CONTRIBUTOR_PRIVATE_KEY") as `0x${string}`;
+  },
+  get borrowerKey() {
+    return requireEnv("BORROWER_PRIVATE_KEY") as `0x${string}`;
+  },
+  get memoryLendingAddress() {
+    return requireEnv("MEMORY_LENDING_ADDRESS") as `0x${string}`;
+  },
+  get operatorRegistryAddress() {
+    return requireEnv("OPERATOR_REGISTRY_ADDRESS") as `0x${string}`;
+  },
+  get identityRegistry() {
+    return optionalEnv(
+      "IDENTITY_REGISTRY",
+      "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    ) as `0x${string}`;
+  },
+  get reputationRegistry() {
+    return optionalEnv(
+      "REPUTATION_REGISTRY",
+      "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
+    ) as `0x${string}`;
+  },
+  get contributorAgentId() {
+    return BigInt(optionalEnv("CONTRIBUTOR_AGENT_ID", "0"));
+  },
+  get borrowerAgentId() {
+    return BigInt(optionalEnv("BORROWER_AGENT_ID", "0"));
+  },
+  get contributorOperatorId() {
+    return BigInt(optionalEnv("CONTRIBUTOR_OPERATOR_ID", "0"));
+  },
+  get borrowerOperatorId() {
+    return BigInt(optionalEnv("BORROWER_OPERATOR_ID", "0"));
+  },
+  get anthropicApiKey() {
+    return optionalEnv("ANTHROPIC_API_KEY", "");
+  },
+  get fragmentServerPort() {
+    return parseInt(optionalEnv("FRAGMENT_SERVER_PORT", "3000"));
+  },
 };
 
 export const OPERATOR_REGISTRY_ABI = [

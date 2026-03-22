@@ -57,7 +57,7 @@ Evaluate + reputation  The borrower runs an A/B eval: task response
 
 ## Quick demo
 
-Requires: Node 20+, [Foundry](https://book.getfoundry.sh/getting-started/installation) (`curl -L https://foundry.paradigm.xyz | bash && foundryup`), `.env` configured (see below). The demo borrows a fragment, runs one eval task (~$0.10 API cost), and prints Basescan links.
+Requires: Node 20+, [Foundry](https://book.getfoundry.sh/getting-started/installation) (`curl -L https://foundry.paradigm.xyz | bash && foundryup`), a fully configured `.env` with a funded borrower identity and linked ERC-8004 agent, and an Anthropic API key. The demo borrows a fragment, runs one eval task (~$0.10 API cost), and prints Basescan links.
 
 ```bash
 npm install
@@ -126,18 +126,33 @@ If cloned without submodules: `git submodule update --init --recursive`
 
 ### Environment
 
-Copy `.env.example` to `.env`. The example file includes the current Base deployment addresses — you only need to add wallet private keys and an Anthropic API key.
+Copy `.env.example` to `.env`.
+
+For read-only verification (`npm run serve`, `npm run list-fragments`), you only need contract addresses and `RPC_URL`.
+
+For write flows (`publish-fragment`, `borrow-fragment`, `demo`, `agent-task`, `evaluate -- --feedback`), you also need:
+
+- funded Base private keys
+- ERC-8004 agent IDs that those wallets already control on Base
+- operator IDs created for those wallets via `npm run register-operator`
+- `ANTHROPIC_API_KEY` for Anthropic-backed evals, or `VENICE_API_KEY` for `--venice`
+
+This repo does not mint ERC-8004 agents. If you are using fresh wallets, mint or obtain agent IDs you own first, then register operators and copy the new operator IDs back into `.env`.
+
+The default public Base RPC in `.env.example` is convenient for light reads, but it can rate-limit repeated contract queries. If `list-fragments` hits HTTP 429, switch `RPC_URL` to your own Base provider.
 
 ```bash
 cp .env.example .env
-# Edit .env: add DEPLOYER_PRIVATE_KEY, BORROWER_PRIVATE_KEY, ANTHROPIC_API_KEY
+# Read-only path: add RPC_URL if you want a non-default provider
+# Write path: add DEPLOYER_PRIVATE_KEY, CONTRIBUTOR_PRIVATE_KEY, BORROWER_PRIVATE_KEY,
+#            agent IDs you control, then ANTHROPIC_API_KEY and/or VENICE_API_KEY
 ```
 
 ### Verify
 
 ```bash
 npx tsc --noEmit                          # TypeScript
-cd contracts && forge test --offline -vv   # Solidity (34 tests)
+cd contracts && forge test --offline -vv   # Solidity (36 tests)
 ```
 
 ## Workflow
