@@ -175,12 +175,12 @@ export const MEMORY_LENDING_ABI = [
   },
   {
     type: "function",
-    name: "setCreditLine",
+    name: "hasBorrowed",
     inputs: [
       { name: "operatorId", type: "uint256" },
-      { name: "newLimit", type: "uint256" },
+      { name: "fragmentId", type: "uint256" },
     ],
-    outputs: [],
+    outputs: [{ name: "", type: "bool" }],
     stateMutability: "nonpayable",
   },
   {

@@ -13,7 +13,6 @@ contract MemoryLending {
     IIdentityRegistry public immutable identityRegistry;
     IOperatorRegistry public immutable operatorRegistry;
     IReputationRegistry public immutable reputationRegistry;
-    address public immutable deployer;
 
     constructor(
         IIdentityRegistry _identityRegistry,
@@ -23,7 +22,6 @@ contract MemoryLending {
         identityRegistry = _identityRegistry;
         operatorRegistry = _operatorRegistry;
         reputationRegistry = _reputationRegistry;
-        deployer = msg.sender;
     }
 
     struct Fragment {
@@ -42,8 +40,6 @@ contract MemoryLending {
 
     /// @notice Credit accounting: operatorId → net balance (can be negative)
     mapping(uint256 => int256) public balances;
-    /// @notice Credit lines: operatorId → max allowed negative balance
-    mapping(uint256 => uint256) public creditLines;
 
     /// @notice Duplicate borrow prevention: operatorId → fragmentId → borrowed
     mapping(uint256 => mapping(uint256 => bool)) public hasBorrowed;
@@ -146,12 +142,6 @@ contract MemoryLending {
         f.active = false;
     }
 
-    /// @notice Set credit line for an operator (deployer only for v0)
-    function setCreditLine(uint256 operatorId, uint256 newLimit) external {
-        require(msg.sender == deployer, "Only deployer");
-        creditLines[operatorId] = newLimit;
-    }
-
     /// @notice Get net balance for an operator
     function getBalance(uint256 operatorId) external view returns (int256) {
         return balances[operatorId];
@@ -170,13 +160,12 @@ contract MemoryLending {
     /// @notice Credit per reputation point from ERC-8004
     uint256 public constant CREDIT_PER_REPUTATION = 2;
 
-    /// @dev Effective credit line = max(BASE_CREDIT_LINE, creditLines[operatorId]) + reputation bonus.
+    /// @dev Effective credit line = BASE_CREDIT_LINE + reputation bonus.
     ///      Reputation bonus reads from the canonical ERC-8004 Reputation Registry
     ///      using getSummary for the "memory-lend" tag. Each positive reputation point
     ///      adds CREDIT_PER_REPUTATION to the credit line.
     function _effectiveCreditLine(uint256 operatorId) internal view returns (uint256) {
-        uint256 custom = creditLines[operatorId];
-        uint256 base = custom > BASE_CREDIT_LINE ? custom : BASE_CREDIT_LINE;
+        uint256 base = BASE_CREDIT_LINE;
 
         // Read reputation bonus from canonical ERC-8004 across ALL linked agents
         uint256 reputationBonus = 0;

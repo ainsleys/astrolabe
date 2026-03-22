@@ -91,8 +91,7 @@ contract MemoryLendingTest is Test {
         // Deploy reputation registry mock
         repRegistry = new MockRepRegistryLending();
 
-        // Deploy lending contract (deployer_ is the deployer)
-        vm.prank(deployer_);
+        // Deploy lending contract
         lending = new MemoryLending(
             IIdentityRegistry(address(idRegistry)),
             IOperatorRegistry(address(opRegistry)),
@@ -205,15 +204,15 @@ contract MemoryLendingTest is Test {
         lending.borrowFragment(0, borrowerOpId);
     }
 
-    function test_borrowRevertsWhenOverGrantedCreditLine() public {
-        uint256 expensivePrice = 8;
+    function test_borrowRevertsWhenOverReputationBoostedCreditLine() public {
+        // Give borrower some reputation: credit line = 5 + (2*2) = 9
+        repRegistry.setSummary(borrowerAgentId, 1, 2);
+
+        uint256 expensivePrice = 10; // exceeds 9
         vm.prank(contributor);
         lending.publishFragment(
             contributorOpId, contentHash, contentURI, domain, expensivePrice
         );
-
-        vm.prank(deployer_);
-        lending.setCreditLine(borrowerOpId, 5);
 
         vm.prank(borrower);
         vm.expectRevert("Exceeds credit line");
@@ -269,31 +268,14 @@ contract MemoryLendingTest is Test {
         vm.prank(borrower);
         uint256 unlinkedOpId = opRegistry.registerOperator("https://borrower-unlinked.dev");
 
-        vm.prank(deployer_);
-        lending.setCreditLine(unlinkedOpId, 10);
-
         vm.prank(borrower);
         vm.expectRevert("Operator has no linked agent");
         lending.borrowFragment(0, unlinkedOpId);
     }
 
-    // ── setCreditLine ────────────────────────────────────────
+    // ── reputation enables borrowing ──────────────────────────
 
-    function test_setCreditLineByDeployer() public {
-        vm.prank(deployer_);
-        lending.setCreditLine(borrowerOpId, 20);
-
-        assertEq(lending.getCreditLine(borrowerOpId), 20);
-    }
-
-    function test_setCreditLineRevertsNonDeployer() public {
-        vm.prank(attacker);
-        vm.expectRevert("Only deployer");
-        lending.setCreditLine(borrowerOpId, 20);
-    }
-
-    function test_setCreditLineEnablesLargerBorrow() public {
-        // Publish an expensive fragment
+    function test_reputationEnablesLargerBorrow() public {
         uint256 expensivePrice = 10;
         vm.prank(contributor);
         lending.publishFragment(
@@ -305,9 +287,8 @@ contract MemoryLendingTest is Test {
         vm.expectRevert("Exceeds credit line");
         lending.borrowFragment(0, borrowerOpId);
 
-        // Increase credit line
-        vm.prank(deployer_);
-        lending.setCreditLine(borrowerOpId, 15);
+        // Give borrower reputation: credit line = 5 + (5*2) = 15
+        repRegistry.setSummary(borrowerAgentId, 3, 5);
 
         // Should succeed now
         vm.prank(borrower);
@@ -340,10 +321,8 @@ contract MemoryLendingTest is Test {
         assertEq(lending.getCreditLine(borrowerOpId), 5);
     }
 
-    function test_getCreditLineUsesBaseWhenCustomIsLower() public {
-        vm.prank(deployer_);
-        lending.setCreditLine(borrowerOpId, 2);
-
+    function test_getCreditLineIsBaseWithNoReputation() public {
+        // No reputation set — should just be BASE_CREDIT_LINE
         assertEq(lending.getCreditLine(borrowerOpId), 5);
     }
 
@@ -380,9 +359,6 @@ contract MemoryLendingTest is Test {
         lending.publishFragment(
             contributorOpId, contentHash, contentURI, domain, priceCredits
         );
-
-        vm.prank(deployer_);
-        lending.setCreditLine(borrowerOpId, 10);
 
         vm.prank(borrower);
         lending.borrowFragment(0, borrowerOpId);
