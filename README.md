@@ -63,13 +63,15 @@ All identity checks, borrow receipts, credit accounting, and reputation feedback
 
 ## Eval results
 
-| Domain | Avg delta | Reputation | Notes |
-|--------|-----------|------------|-------|
-| Aquaculture | **+3.1** | — (local) | Corrections about tilapia disease, FCR methodology, and carp breeding improved responses. |
-| Materials science | **+1.9** | 7/10 | Biofouling prevention, HDPE bioreactors, PHA degradation — domain expertise the model lacked. |
-| SaaS engineering | **+0.6** | 6/10 | Mixed — two tasks improved strongly, one regressed. Net positive but with variance. |
+Each task was run 5 times with a blind judge. 95% confidence intervals distinguish real effects from judge variance.
 
-Results show corrections help most where genuine domain knowledge gaps exist. The service-integration-verification task consistently regresses because the baseline is already strong — the system captures this honestly through per-task scoring.
+| Domain | Mean delta | 95% CI | Significant? |
+|--------|-----------|--------|-------------|
+| Aquaculture | **+1.93** | [+0.6, +3.3] | **Yes** |
+| Materials science | **+1.76** | [+1.1, +2.4] | **Yes** |
+| SaaS engineering | +0.13 | [-1.2, +1.5] | No |
+
+7 of 9 individual tasks show statistically significant effects (6 positive, 1 negative). Corrections help most where genuine domain knowledge gaps exist. The service-integration-verification task shows a significant *negative* effect (mean -2.27, CI [-2.8, -1.7]) — corrections reliably hurt when the baseline is already strong.
 
 ## Setup
 
