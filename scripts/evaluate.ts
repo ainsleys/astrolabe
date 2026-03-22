@@ -194,18 +194,13 @@ Score each response on three dimensions (1-10):
 2. Specificity: Does it include concrete details rather than generalities?
 3. Actionability: Could someone act on this without significant additional research?
 
-Respond with ONLY this JSON:
-{
-  "response_1": {"accuracy": N, "specificity": N, "actionability": N},
-  "response_2": {"accuracy": N, "specificity": N, "actionability": N},
-  "better": "1" or "2",
-  "explanation": "one sentence"
-}`;
+Respond with ONLY valid JSON, no other text before or after:
+{"response_1":{"accuracy":N,"specificity":N,"actionability":N},"response_2":{"accuracy":N,"specificity":N,"actionability":N},"better":"1" or "2","explanation":"one sentence"}`;
 
   for (let attempt = 0; attempt < MAX_JUDGE_RETRIES; attempt++) {
     const response = await client.messages.create({
       model: JUDGE_MODEL,
-      max_tokens: 512,
+      max_tokens: 1024,
       messages: [{ role: "user", content: judgePrompt }],
     });
 

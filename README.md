@@ -54,8 +54,8 @@ npm run demo             # full flow: discover → borrow → eval → Basescan 
 
 | Contract | Address |
 |----------|---------|
-| OperatorRegistry | [`0x9C3c...06`](https://basescan.org/address/0x9C3cE38306bE382b5EC2E7B766FB1cd37C4a3306) |
-| MemoryLending | [`0x3920...4d`](https://basescan.org/address/0x392003B2c4D09fc9d68e52621BfB11c60b251E4d) |
+| OperatorRegistry | [`0x9Fcb...98`](https://basescan.org/address/0x9Fcb78b95c378b60C51Daa4Cb4d0C0F712C07f98) |
+| MemoryLending | [`0x9E6d...a0`](https://basescan.org/address/0x9E6dDD743468Cc52F591f21DeFdE94f85587bda0) |
 | ERC-8004 Identity | [`0x8004...32`](https://basescan.org/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) (canonical) |
 | ERC-8004 Reputation | [`0x8004...63`](https://basescan.org/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63) (canonical) |
 
