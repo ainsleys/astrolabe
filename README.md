@@ -176,6 +176,19 @@ Notes:
 RPC_URL=https://your-base-rpc.example npm run judge-check
 ```
 
+### AI Judge Verification
+
+For an AI or automated first-pass judge, use the machine-readable variant:
+
+```bash
+npm install
+npm run ai-judge-check
+```
+
+This prints JSON only. It is designed to be stable for automated parsing and summarizes local repo evidence, repeated-eval artifacts, fragment inventory, agent manifest presence, and read-only on-chain fragment visibility.
+
+See [AI_JUDGE.md](AI_JUDGE.md) for the concise AI-judge briefing.
+
 ## Workflow
 
 ### 1. Discover available fragments

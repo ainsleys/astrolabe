@@ -11,6 +11,21 @@ type CheckResult = {
   detail: string;
 };
 
+type Summary = {
+  project: {
+    name: string;
+    repository: string;
+    verificationMode: "human" | "ai";
+  };
+  localChecks: CheckResult[];
+  onChainChecks: CheckResult[];
+  warnings: string[];
+  conclusion: {
+    localReady: boolean;
+    onChainVerified: boolean;
+  };
+};
+
 interface EvalSummary {
   runs: number;
   tasks: Record<string, { deltas: number[] }>;
@@ -32,6 +47,7 @@ const DEFAULT_RPC_URL = process.env.RPC_URL || "https://mainnet.base.org";
 const DEFAULT_MEMORY_LENDING =
   (process.env.MEMORY_LENDING_ADDRESS ||
     "0x10c89c8f7991d72C7162EaC0CD272B75DB8EE469") as `0x${string}`;
+const JSON_MODE = process.argv.includes("--json");
 
 function printHeading(title: string) {
   console.log(`\n${title}`);
@@ -184,29 +200,54 @@ async function main() {
     ...checkLocalArtifacts(),
   ];
 
-  printHeading("Astrolabe Judge Check");
-  for (const result of localResults) report(result);
-
   let rpcResults: CheckResult[] = [];
-  let rpcWarning: string | null = null;
+  const warnings: string[] = [];
 
   try {
     rpcResults = await checkOnChainState();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    rpcWarning = message.includes("over rate limit")
-      ? "Public Base RPC rate-limited. Set RPC_URL to your own provider and rerun judge-check."
-      : `RPC check failed: ${message}`;
+    warnings.push(
+      message.includes("over rate limit")
+        ? "Public Base RPC rate-limited. Set RPC_URL to your own provider and rerun judge-check."
+        : `RPC check failed: ${message}`
+    );
   }
 
+  const failedLocal = localResults.filter((result) => !result.ok);
+  const summary: Summary = {
+    project: {
+      name: "Astrolabe",
+      repository: "https://github.com/ainsleys/astrolabe",
+      verificationMode: JSON_MODE ? "ai" : "human",
+    },
+    localChecks: localResults,
+    onChainChecks: rpcResults,
+    warnings,
+    conclusion: {
+      localReady: failedLocal.length === 0,
+      onChainVerified: rpcResults.length > 0 && warnings.length === 0,
+    },
+  };
+
+  if (JSON_MODE) {
+    console.log(JSON.stringify(summary, null, 2));
+    if (failedLocal.length > 0) process.exit(1);
+    return;
+  }
+
+  printHeading("Astrolabe Judge Check");
+  for (const result of localResults) report(result);
+
   printHeading("On-Chain Read-Only Checks");
-  if (rpcWarning) {
-    console.log(`[WARN] ${rpcWarning}`);
+  if (warnings.length > 0) {
+    for (const warning of warnings) {
+      console.log(`[WARN] ${warning}`);
+    }
   } else {
     for (const result of rpcResults) report(result);
   }
 
-  const failedLocal = localResults.filter((result) => !result.ok);
   printHeading("Summary");
   console.log(
     failedLocal.length === 0
@@ -214,7 +255,7 @@ async function main() {
       : `${failedLocal.length} required local check(s) failed.`
   );
   console.log(
-    rpcWarning
+    warnings.length > 0
       ? "On-chain verification was skipped or degraded; the repo materials are still present locally."
       : "On-chain verification succeeded."
   );

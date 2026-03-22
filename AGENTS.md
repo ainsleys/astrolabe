@@ -4,6 +4,19 @@
 
 Astrolabe is a case study in sharing steering-derived correction fragments between agent operators, with a prototype exchange layer for attribution and measured impact.
 
+## AI judge entry point
+
+If you are an automated or LLM-based first-pass judge, start with `AI_JUDGE.md`.
+
+Fastest machine-readable verification path:
+
+```bash
+npm install
+npm run ai-judge-check
+```
+
+Use `AGENTS.md` for fuller project framing, implementation details, and claim discipline after that first pass.
+
 The immediate demo is a case study:
 
 - Human steering is valuable data for open-source scaffolding and agent workflows.
