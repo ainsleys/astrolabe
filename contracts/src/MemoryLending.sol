@@ -178,21 +178,23 @@ contract MemoryLending {
         uint256 custom = creditLines[operatorId];
         uint256 base = custom > BASE_CREDIT_LINE ? custom : BASE_CREDIT_LINE;
 
-        // Read reputation bonus from canonical ERC-8004 if operator has linked agents
+        // Read reputation bonus from canonical ERC-8004 across ALL linked agents
         uint256 reputationBonus = 0;
         try operatorRegistry.getOperatorAgentCount(operatorId) returns (uint256 agentCount) {
             if (agentCount > 0) {
-                // Get the first linked agent's reputation for "memory-lend" tag
                 uint256[] memory agents = operatorRegistry.getOperatorAgents(operatorId);
                 address[] memory empty = new address[](0);
-                try reputationRegistry.getSummary(agents[0], empty, "memory-lend", "") returns (
-                    uint64 count, int128 summaryValue, uint8
-                ) {
-                    if (count > 0 && summaryValue > 0) {
-                        reputationBonus = uint256(uint128(summaryValue)) * CREDIT_PER_REPUTATION;
+                // Aggregate reputation across all linked agents
+                for (uint256 i = 0; i < agents.length; i++) {
+                    try reputationRegistry.getSummary(agents[i], empty, "memory-lend", "") returns (
+                        uint64 count, int128 summaryValue, uint8
+                    ) {
+                        if (count > 0 && summaryValue > 0) {
+                            reputationBonus += uint256(uint128(summaryValue)) * CREDIT_PER_REPUTATION;
+                        }
+                    } catch {
+                        // Individual agent lookup failed — skip
                     }
-                } catch {
-                    // Registry call failed — use base only
                 }
             }
         } catch {

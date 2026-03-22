@@ -118,10 +118,11 @@ async function main() {
   let cachedValid = false;
   if (existsSync(receiptPath)) {
     const existing = JSON.parse(readFileSync(receiptPath, "utf-8"));
-    // Validate receipt matches current contract, operator, and content hash
+    // Validate receipt matches current contract, operator, content hash, and chain
     if (
       existing.contentHash === fragment.contentHash &&
       existing.borrowerOperatorId === config.borrowerOperatorId.toString() &&
+      (!existing.contractAddress || existing.contractAddress === config.memoryLendingAddress) &&
       existing.content
     ) {
       content = existing.content;

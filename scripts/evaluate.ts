@@ -55,7 +55,9 @@ interface BorrowReceipt {
   domain: string;
   contentHash: string;
   contentURI: string;
+  contractAddress?: string;
   contributorOperatorId: string;
+  contributorAgentIds?: string[];
   borrowerOperatorId: string;
   priceCredits: string;
   borrowTxHash: string;
@@ -112,25 +114,33 @@ type FragmentSource = {
   content: string;
   hashes: string[];
   source: "borrow" | "local";
-  contributorOperatorId?: string;
+  /// Map from contributorOperatorId → list of agentIds that contributed
+  contributors: Map<string, string[]>;
 };
 
 function loadFragmentsForDomain(domain: string): FragmentSource | null {
   // Prefer borrow receipts — these are on-chain-verified
   const receipts = loadBorrowReceipts(domain);
   if (receipts.length > 0) {
+    // Build contributor map: operatorId → agentIds (for per-contributor feedback)
+    const contributors = new Map<string, string[]>();
+    for (const r of receipts) {
+      if (!contributors.has(r.contributorOperatorId)) {
+        contributors.set(r.contributorOperatorId, r.contributorAgentIds || []);
+      }
+    }
     return {
       content: receipts.map((r) => r.content).join("\n\n---\n\n"),
       hashes: receipts.map((r) => r.contentHash),
       source: "borrow",
-      contributorOperatorId: receipts[0].contributorOperatorId,
+      contributors,
     };
   }
 
   // Fall back to local fragments
   const local = loadLocalFragments(domain);
   if (local) {
-    return { ...local, source: "local" };
+    return { ...local, source: "local", contributors: new Map() };
   }
 
   return null;
@@ -424,42 +434,45 @@ async function main() {
       console.log(`    Submitting on-chain feedback for ${domain}...`);
       console.log(`    Score: ${clampedScore}/10 (delta: ${domDelta > 0 ? "+" : ""}${domDelta.toFixed(1)})`);
       console.log(`    Content hashes: ${frag.hashes.length} fragment(s)`);
-      console.log(
-        `    Contributor operator: ${frag.contributorOperatorId}`
-      );
-      console.log(
-        `    Feedback target (agent ID): ${config.contributorAgentId}`
-      );
+      console.log(`    Contributors: ${frag.contributors.size} operator(s)`);
 
-      try {
-        const wallet = getBorrowerWallet();
-        const publicClient = getPublicClient();
+      const wallet = getBorrowerWallet();
+      const publicClient = getPublicClient();
 
-        // giveFeedback uses agentId (ERC-8004 interface), not operatorId
-        const contributorId = config.contributorAgentId;
+      // Submit feedback per contributor, using their actual agent IDs from receipts
+      for (const [opId, agentIds] of frag.contributors) {
+        if (agentIds.length === 0) {
+          console.log(`    Operator ${opId}: no agent IDs in receipt, skipping feedback`);
+          continue;
+        }
 
-        const hash = await giveFeedback(
-          wallet,
-          contributorId,
-          clampedScore,
-          "memory-lend",
-          domain,
-          "",
-          evidenceHash
-        );
+        // Submit feedback for each agent ID linked to this contributor
+        for (const agentIdStr of agentIds) {
+          const agentId = BigInt(agentIdStr);
+          console.log(`    Feedback → agent #${agentId} (operator ${opId})`);
 
-        console.log(`    Tx: ${hash}`);
-        const receipt = await publicClient.waitForTransactionReceipt({
-          hash,
-        });
-        console.log(`    Block: ${receipt.blockNumber}`);
-        console.log(`    Reputation feedback submitted for ${domain}.`);
-      } catch (err) {
-        console.error(
-          `    Failed to submit feedback for ${domain}:`,
-          err
-        );
+          try {
+            const hash = await giveFeedback(
+              wallet,
+              agentId,
+              clampedScore,
+              "memory-lend",
+              domain,
+              "",
+              evidenceHash
+            );
+
+            console.log(`      Tx: ${hash}`);
+            const receipt = await publicClient.waitForTransactionReceipt({
+              hash,
+            });
+            console.log(`      Block: ${receipt.blockNumber}`);
+          } catch (err) {
+            console.error(`      Failed:`, err);
+          }
+        }
       }
+      console.log(`    Reputation feedback submitted for ${domain}.`);
       console.log();
     } else if (submitOnChain && frag.source === "local") {
       console.log(

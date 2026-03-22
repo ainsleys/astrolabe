@@ -132,12 +132,28 @@ async function main() {
   // Step 6: Save borrow receipt
   mkdirSync(BORROWS_DIR, { recursive: true });
 
+  // Look up contributor's linked agents for feedback attribution
+  let contributorAgentIds: string[] = [];
+  try {
+    const agents = await publicClient.readContract({
+      address: config.operatorRegistryAddress,
+      abi: OPERATOR_REGISTRY_ABI,
+      functionName: "getOperatorAgents",
+      args: [fragment.operatorId],
+    });
+    contributorAgentIds = (agents as bigint[]).map((a) => a.toString());
+  } catch {
+    // Operator may have no linked agents; record empty
+  }
+
   const borrowReceipt = {
     fragmentId: fragmentId.toString(),
     domain: fragment.domain,
     contentHash: fragment.contentHash,
     contentURI: fragment.contentURI,
+    contractAddress: config.memoryLendingAddress,
     contributorOperatorId: fragment.operatorId.toString(),
+    contributorAgentIds,
     borrowerOperatorId: config.borrowerOperatorId.toString(),
     priceCredits: fragment.priceCredits.toString(),
     borrowTxHash: hash,

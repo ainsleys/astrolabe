@@ -90,6 +90,13 @@ export const OPERATOR_REGISTRY_ABI = [
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
   },
+  {
+    type: "function",
+    name: "getOperatorAgents",
+    inputs: [{ name: "operatorId", type: "uint256" }],
+    outputs: [{ name: "", type: "uint256[]" }],
+    stateMutability: "view",
+  },
 ] as const satisfies Abi;
 
 export const MEMORY_LENDING_ABI = [

@@ -29,13 +29,15 @@ async function main() {
   });
   console.log(`  Block: ${contributorReceipt.blockNumber}`);
 
-  // Read the next operator ID to derive the one just assigned
-  const nextId = await publicClient.readContract({
-    address: config.operatorRegistryAddress,
-    abi: OPERATOR_REGISTRY_ABI,
-    functionName: "nextOperatorId",
-  });
-  const contributorOperatorId = nextId - 1n;
+  // Parse operator ID from OperatorRegistered event in receipt
+  const contributorRegLog = contributorReceipt.logs.find(
+    (log) => log.address.toLowerCase() === config.operatorRegistryAddress.toLowerCase() && log.topics[1]
+  );
+  const contributorOperatorId = contributorRegLog ? BigInt(contributorRegLog.topics[1]!) : 0n;
+  if (contributorOperatorId === 0n) {
+    console.error("Failed to parse contributor operator ID from receipt");
+    process.exit(1);
+  }
   console.log(`  Contributor operator ID: ${contributorOperatorId}`);
 
   // Link contributor agent to operator
@@ -76,12 +78,14 @@ async function main() {
   });
   console.log(`  Block: ${borrowerReceipt.blockNumber}`);
 
-  const nextId2 = await publicClient.readContract({
-    address: config.operatorRegistryAddress,
-    abi: OPERATOR_REGISTRY_ABI,
-    functionName: "nextOperatorId",
-  });
-  const borrowerOperatorId = nextId2 - 1n;
+  const borrowerRegLog = borrowerReceipt.logs.find(
+    (log) => log.address.toLowerCase() === config.operatorRegistryAddress.toLowerCase() && log.topics[1]
+  );
+  const borrowerOperatorId = borrowerRegLog ? BigInt(borrowerRegLog.topics[1]!) : 0n;
+  if (borrowerOperatorId === 0n) {
+    console.error("Failed to parse borrower operator ID from receipt");
+    process.exit(1);
+  }
   console.log(`  Borrower operator ID: ${borrowerOperatorId}`);
 
   // Link borrower agent to operator
