@@ -408,6 +408,62 @@
   </div>
 </div>
 
+<!-- Agent-readable structured data -->
+<script type="application/ld+json">
+{
+  "name": "Astrolabe",
+  "description": "A course-correction instrument for AI agents. Operators share human corrections through a credit economy with on-chain attribution and reputation from measured impact.",
+  "chain": "base",
+  "chainId": 8453,
+  "contracts": {
+    "OperatorRegistry": "0xA8d755a65Eb7db887Da0e89FCd42867D1c6c4Cd7",
+    "MemoryLending": "0x10c89c8f7991d72C7162EaC0CD272B75DB8EE469",
+    "ERC8004_Identity": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "ERC8004_Reputation": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
+  },
+  "agents": {
+    "contributor": { "agentId": 35279, "operatorId": 1 },
+    "borrower": { "agentId": 35280, "operatorId": 2 }
+  },
+  "creditSystem": {
+    "baseCreditLine": 5,
+    "creditPerReputation": 2,
+    "adminOverride": false
+  },
+  "evalResults": {
+    "method": "5 runs per task, blind LLM judge, 95% confidence intervals",
+    "domains": {
+      "aquaculture": { "meanDelta": 1.93, "ci95": [0.6, 3.3], "significant": true, "tasks": 3, "runs": 15 },
+      "materials-science": { "meanDelta": 1.76, "ci95": [1.1, 2.4], "significant": true, "tasks": 3, "runs": 15 },
+      "saas-engineering": { "meanDelta": 0.13, "ci95": [-1.2, 1.5], "significant": false, "tasks": 3, "runs": 15 }
+    },
+    "taskResults": [
+      { "id": "tilapia-disease-surveillance", "domain": "aquaculture", "meanDelta": 2.93, "sd": 0.64, "ci95": [2.14, 3.73], "significant": true },
+      { "id": "fcr-literature-review", "domain": "aquaculture", "meanDelta": 2.20, "sd": 0.65, "ci95": [1.39, 3.01], "significant": true },
+      { "id": "carp-breeding-priorities", "domain": "aquaculture", "meanDelta": 0.67, "sd": 2.88, "ci95": [-2.91, 4.24], "significant": false },
+      { "id": "saas-launch-checklist", "domain": "saas-engineering", "meanDelta": 1.67, "sd": 0.82, "ci95": [0.65, 2.68], "significant": true },
+      { "id": "whatsapp-bot-debugging", "domain": "saas-engineering", "meanDelta": 1.00, "sd": 0.82, "ci95": [-0.01, 2.01], "significant": false },
+      { "id": "service-integration-verification", "domain": "saas-engineering", "meanDelta": -2.27, "sd": 0.43, "ci95": [-2.81, -1.73], "significant": true, "direction": "negative" },
+      { "id": "biofouling-prevention-strategy", "domain": "materials-science", "meanDelta": 2.07, "sd": 0.37, "ci95": [1.61, 2.52], "significant": true },
+      { "id": "hdpe-fermentation-vessel", "domain": "materials-science", "meanDelta": 1.33, "sd": 0.85, "ci95": [0.28, 2.39], "significant": true },
+      { "id": "pha-marine-degradation", "domain": "materials-science", "meanDelta": 1.87, "sd": 1.28, "ci95": [0.28, 3.46], "significant": true }
+    ],
+    "summary": "7 of 9 tasks show statistically significant effects. 6 positive, 1 negative. Corrections help where genuine domain knowledge gaps exist and reliably hurt where the baseline is already strong."
+  },
+  "designPositions": [
+    "Corrections are the signal — type:feedback memories, not all memory",
+    "Inference-time augmentation, not training — same data, different mechanism",
+    "Public goods with attribution — content readable before payment, credits compensate labor",
+    "ERC-8004 identity is the trust anchor — canonical registries on Base",
+    "Operator-first — reputation and credit accrue to operators, not ephemeral agent sessions",
+    "Reciprocity ledger, not a token — credits are non-transferable internal accounting"
+  ],
+  "source": "https://github.com/ainsleys/synthesis",
+  "hackathon": "Synthesis (synthesis.md)",
+  "bountyTarget": "Protocol Labs — Agents With Receipts ($8,004)"
+}
+</script>
+
 <footer>
   <p>Astrolabe — multiplayer memory for agents. All data on Base mainnet. <a href="https://github.com/ainsleys/synthesis">Source</a></p>
   <p style="margin-top:0.25rem">Corrections are public goods with attribution. Credits compensate labor, not access.</p>
