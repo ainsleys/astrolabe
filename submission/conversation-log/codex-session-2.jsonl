@@ -38,35 +38,35 @@ Dismiss
 The current draft jumps from 'operators accumulate expertise' to 'publish fragments of memory' without proving that raw or lightly processed memory is actually portable. In practice, much of the value lives in judgment, sequencing, and operator steering, which often does not survive decontextualization. Tightening this section around a narrower artifact, such as a derived playbook or task-scoped expertise packet, would make the concept feel much more defensible.
 
 
-/Users/ainsleys/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:15-17
+/Users/[REDACTED]/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:15-17
 P1
 Retrieval is not the same as attribution
 Dismiss
 This overstates the hard part. An on-chain log can prove that a fragment was queried or retrieved, but it does not show that the fragment caused success, improved quality, or deserved payment. If attribution is one of the core reasons for using a blockchain here, the design needs a more explicit stance on what is actually measurable and how payout avoids spam retrieval or credit capture by irrelevant fragments.
 
 
-/Users/ainsleys/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:29-29
+/Users/[REDACTED]/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:29-29
 P1
 Privacy threat model is too narrow
 Dismiss
 The privacy section currently focuses on scrubbing and storage, but the bigger issue is that borrowers and even search queries can leak sensitive context once the packet is usable. TEEs or encryption may hide content from the registry operator, yet they do not solve leakage through retrieval prompts, outputs, or downstream behavior. This needs to be framed as a broader adversarial design problem rather than just a sanitization challenge.
 
 
-/Users/ainsleys/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:33-37
+/Users/[REDACTED]/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:33-37
 P2
 Market-pricing claim needs more support
 Dismiss
 The draft treats scarcity as if it naturally produces premium pricing, but rare expertise can also be illiquid, hard to evaluate, and dominated by a few trusted brands. This section would be stronger if it distinguished 'rare and valuable' from 'rare and tradable' and named the conditions under which a real market can clear.
 
 
-/Users/ainsleys/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:19-19
+/Users/[REDACTED]/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:19-19
 P2
 Too anchored to one tool's memory format
 Dismiss
 Grounding the argument in Claude Code makes the idea concrete, but the current framing risks making the protocol feel tool-specific rather than ecosystem-level. If the opportunity is real, it should survive changes in file names, memory layout, and vendor UX. Consider abstracting the exported artifact away from any one product's memory implementation.
 
 
-/Users/ainsleys/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:25-25
+/Users/[REDACTED]/synthesis/research/hackathon-ideas/02-lendable-agent-memory-concept.md:25-25
 I added the review as inline repo comments on the original doc and drafted a stronger rewrite at 02-lendable-agent-memory-concept-v2.md.
 
 The new version shifts the concept away from “selling memory fragments” toward “derived expertise packets,” makes the on-chain case more explicit, and is more candid about the two hardest problems: privacy leakage and non-causal attribution. I kept your original file untouched so you can compare framing side by side. This was docs-only work, so I didn’t run tests.
