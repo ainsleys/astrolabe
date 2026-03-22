@@ -1,6 +1,6 @@
 import { keccak256, toHex } from "viem";
 import { config, MEMORY_LENDING_ABI } from "./lib/config.js";
-import { getPublicClient, getContributorWallet } from "./lib/wallet.js";
+import { getPublicClient, getContributorWallet, getBorrowerWallet } from "./lib/wallet.js";
 import { readFileSync, copyFileSync, existsSync } from "fs";
 import { resolve, basename, dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -39,21 +39,24 @@ async function main() {
   const contentURI = `http://localhost:${config.fragmentServerPort}/${servedName}`;
   const priceCredits = BigInt(priceCreditsStr);
 
+  const asBorrower = process.argv.includes("--borrower");
+  const operatorId = asBorrower ? config.borrowerOperatorId : config.contributorOperatorId;
+  const wallet = asBorrower ? getBorrowerWallet() : getContributorWallet();
+
   console.log("Publishing fragment...");
   console.log(`  Domain: ${domain}`);
   console.log(`  Price: ${priceCreditsStr} credits`);
   console.log(`  Content hash: ${contentHash}`);
   console.log(`  Content URI: ${contentURI}`);
-  console.log(`  Contributor operator ID: ${config.contributorOperatorId}`);
+  console.log(`  Publisher operator ID: ${operatorId}${asBorrower ? " (borrower)" : ""}`);
 
   const publicClient = getPublicClient();
-  const wallet = getContributorWallet();
 
   const hash = await wallet.writeContract({
     address: config.memoryLendingAddress,
     abi: MEMORY_LENDING_ABI,
     functionName: "publishFragment",
-    args: [config.contributorOperatorId, contentHash, contentURI, domain, priceCredits],
+    args: [operatorId, contentHash, contentURI, domain, priceCredits],
     account: wallet.account!,
     chain: wallet.chain,
   });

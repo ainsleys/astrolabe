@@ -3,7 +3,7 @@ import { writeFileSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { config, MEMORY_LENDING_ABI, OPERATOR_REGISTRY_ABI } from "./lib/config.js";
-import { getPublicClient, getBorrowerWallet } from "./lib/wallet.js";
+import { getPublicClient, getBorrowerWallet, getContributorWallet } from "./lib/wallet.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BORROWS_DIR = join(__dirname, "..", "borrows");
@@ -16,8 +16,10 @@ async function main() {
   }
 
   const fragmentId = BigInt(fragmentIdStr);
+  const asContributor = process.argv.includes("--contributor");
   const publicClient = getPublicClient();
-  const wallet = getBorrowerWallet();
+  const wallet = asContributor ? getContributorWallet() : getBorrowerWallet();
+  const operatorId = asContributor ? config.contributorOperatorId : config.borrowerOperatorId;
 
   // Step 1: Get fragment metadata on-chain
   console.log(`Fetching fragment ${fragmentId} metadata...`);
@@ -39,20 +41,20 @@ async function main() {
   console.log(`  Expected hash: ${fragment.contentHash}`);
 
   // Step 2: Display borrower credit balance and credit line
-  console.log(`\nBorrower credit status (operator ${config.borrowerOperatorId}):`);
+  console.log(`\nBorrower credit status (operator ${operatorId}):`);
 
   const balance = await publicClient.readContract({
     address: config.memoryLendingAddress,
     abi: MEMORY_LENDING_ABI,
     functionName: "getBalance",
-    args: [config.borrowerOperatorId],
+    args: [operatorId],
   });
 
   const creditLine = await publicClient.readContract({
     address: config.memoryLendingAddress,
     abi: MEMORY_LENDING_ABI,
     functionName: "getCreditLine",
-    args: [config.borrowerOperatorId],
+    args: [operatorId],
   });
 
   console.log(`  Current balance: ${balance} credits`);
@@ -64,7 +66,7 @@ async function main() {
     address: config.operatorRegistryAddress,
     abi: OPERATOR_REGISTRY_ABI,
     functionName: "getOperatorAgentCount",
-    args: [config.borrowerOperatorId],
+    args: [operatorId],
   });
 
   console.log(`  Linked agents: ${agentCount}`);
@@ -83,7 +85,7 @@ async function main() {
       "Ask the deployer/admin to raise this operator's credit line if needed:"
     );
     console.error(
-      `  npm run set-credit-line -- ${config.borrowerOperatorId} ${fragment.priceCredits}`
+      `  npm run set-credit-line -- ${operatorId} ${fragment.priceCredits}`
     );
     process.exit(1);
   }
@@ -118,7 +120,7 @@ async function main() {
     address: config.memoryLendingAddress,
     abi: MEMORY_LENDING_ABI,
     functionName: "borrowFragment",
-    args: [fragmentId, config.borrowerOperatorId],
+    args: [fragmentId, operatorId],
     account: wallet.account!,
     chain: wallet.chain,
   });
@@ -126,7 +128,7 @@ async function main() {
   console.log(`  Tx: ${hash}`);
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   console.log(`  Block: ${receipt.blockNumber}`);
-  console.log(`  Borrower operator ID: ${config.borrowerOperatorId}`);
+  console.log(`  Borrower operator ID: ${operatorId}`);
   console.log(`  Contributor operator ID: ${fragment.operatorId}`);
 
   // Step 6: Save borrow receipt
@@ -154,7 +156,7 @@ async function main() {
     contractAddress: config.memoryLendingAddress,
     contributorOperatorId: fragment.operatorId.toString(),
     contributorAgentIds,
-    borrowerOperatorId: config.borrowerOperatorId.toString(),
+    borrowerOperatorId: operatorId.toString(),
     priceCredits: fragment.priceCredits.toString(),
     borrowTxHash: hash,
     blockNumber: receipt.blockNumber.toString(),
