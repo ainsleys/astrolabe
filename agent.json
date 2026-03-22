@@ -1,0 +1,58 @@
+{
+  "name": "Astrolabe Autonomous Agent",
+  "description": "An autonomous agent that discovers, borrows, and evaluates correction fragments from the Astrolabe protocol. Improves its own responses by borrowing domain expertise from other operators' corrections, then submits measured reputation feedback on-chain.",
+  "version": "0.1.0",
+  "identity": {
+    "erc8004AgentId": 35601,
+    "operatorId": 2,
+    "chain": "base",
+    "chainId": 8453,
+    "identityRegistry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "reputationRegistry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63"
+  },
+  "capabilities": [
+    {
+      "name": "discover-corrections",
+      "description": "Query on-chain MemoryLending contract for published correction fragments by domain",
+      "tools": ["base-rpc"]
+    },
+    {
+      "name": "borrow-corrections",
+      "description": "Borrow correction fragments within credit budget, verify content hash before recording on-chain",
+      "tools": ["base-rpc", "http-fetch"]
+    },
+    {
+      "name": "evaluate-corrections",
+      "description": "A/B evaluation: generate baseline and augmented responses, blind judge comparison",
+      "tools": ["anthropic-api", "venice-api"]
+    },
+    {
+      "name": "submit-reputation",
+      "description": "Submit measured eval delta as reputation feedback via canonical ERC-8004 Reputation Registry",
+      "tools": ["base-rpc"]
+    }
+  ],
+  "autonomousLoop": {
+    "steps": ["discover", "budget-check", "select", "borrow", "generate", "judge", "feedback", "output"],
+    "humanIntervention": "none",
+    "gracefulDegradation": "falls back to baseline response if no fragments available or credit exhausted"
+  },
+  "safety": {
+    "creditBudgetAwareness": true,
+    "duplicateBorrowPrevention": "on-chain hasBorrowed check",
+    "hashVerification": "keccak256 content hash verified before borrow recorded",
+    "dryRunMode": "--dry-run flag skips all on-chain transactions",
+    "maxFragmentsPerRun": 3
+  },
+  "contracts": {
+    "MemoryLending": "0x10c89c8f7991d72C7162EaC0CD272B75DB8EE469",
+    "OperatorRegistry": "0xA8d755a65Eb7db887Da0e89FCd42867D1c6c4Cd7"
+  },
+  "providers": {
+    "default": "anthropic (claude-sonnet-4-20250514)",
+    "alternative": "venice (llama-3.3-70b, no-data-retention)"
+  },
+  "logFormat": "agent-runs/{timestamp}-{domain}.json",
+  "source": "https://github.com/ainsleys/synthesis",
+  "entrypoint": "npx tsx scripts/agent-task.ts"
+}
