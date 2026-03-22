@@ -1,1 +1,33 @@
-{"provider":"venice","model":"llama-3.3-70b","noDataRetention":true,"results":{"aquaculture":{"delta":1.4},"materials-science":{"delta":0.4},"saas-engineering":{"delta":0.1},"overall":{"delta":0.7}}}
+{
+  "provider": "venice",
+  "model": "llama-3.3-70b",
+  "noDataRetention": true,
+  "note": "Single run through Venice API. Per-task detail reconstructed from console output. Demonstrates cross-model transfer: corrections from Claude operator sessions applied to Llama.",
+  "domains": {
+    "aquaculture": {
+      "delta": 1.4,
+      "tasks": [
+        { "id": "tilapia-disease-surveillance", "baselineAvg": 8.3, "augmentedAvg": 9.0, "delta": 0.7 },
+        { "id": "fcr-literature-review", "baselineAvg": 5.0, "augmentedAvg": 8.7, "delta": 3.7 },
+        { "id": "carp-breeding-priorities", "baselineAvg": 8.0, "augmentedAvg": 8.0, "delta": 0.0 }
+      ]
+    },
+    "saas-engineering": {
+      "delta": 0.1,
+      "tasks": [
+        { "id": "saas-launch-checklist", "baselineAvg": 8.0, "augmentedAvg": 9.0, "delta": 1.0 },
+        { "id": "whatsapp-bot-debugging", "baselineAvg": 7.7, "augmentedAvg": 9.0, "delta": 1.3 },
+        { "id": "service-integration-verification", "baselineAvg": 9.0, "augmentedAvg": 7.0, "delta": -2.0 }
+      ]
+    },
+    "materials-science": {
+      "delta": 0.4,
+      "tasks": [
+        { "id": "biofouling-prevention-strategy", "baselineAvg": 7.3, "augmentedAvg": 8.7, "delta": 1.3 },
+        { "id": "hdpe-fermentation-vessel", "baselineAvg": 8.0, "augmentedAvg": 8.3, "delta": 0.3 },
+        { "id": "pha-marine-degradation", "baselineAvg": 8.0, "augmentedAvg": 7.7, "delta": -0.3 }
+      ]
+    }
+  },
+  "overall": { "baselineAvg": 7.7, "augmentedAvg": 8.4, "delta": 0.7 }
+}

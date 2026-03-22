@@ -1,0 +1,124 @@
+{
+  "version": "1.0",
+  "name": "Astrolabe autonomous agent",
+  "taskPrompt": "Design a biofouling prevention strategy for aquaculture net pens that avoids copper-based coatings",
+  "domain": "materials-science",
+  "provider": "anthropic",
+  "model": "claude-sonnet-4-20250514",
+  "chain": "base",
+  "chainId": 8453,
+  "startedAt": "2026-03-22T13:51:59.721Z",
+  "completedAt": "2026-03-22T13:52:55.995Z",
+  "contracts": {
+    "memoryLending": "0x10c89c8f7991d72C7162EaC0CD272B75DB8EE469",
+    "operatorRegistry": "0xA8d755a65Eb7db887Da0e89FCd42867D1c6c4Cd7"
+  },
+  "borrowerOperatorId": "2",
+  "dryRun": true,
+  "steps": [
+    {
+      "step": "discover",
+      "timestamp": "2026-03-22T13:52:00.996Z",
+      "fragmentsFound": 6,
+      "domain": "materials-science"
+    },
+    {
+      "step": "check-budget",
+      "timestamp": "2026-03-22T13:52:01.131Z",
+      "balance": "3",
+      "creditLine": "5",
+      "available": "8"
+    },
+    {
+      "step": "select",
+      "timestamp": "2026-03-22T13:52:01.558Z",
+      "selected": [
+        "4",
+        "5"
+      ],
+      "reasoning": [
+        {
+          "fragmentId": "4",
+          "action": "select",
+          "price": "4",
+          "reason": "within budget, cheapest available"
+        },
+        {
+          "fragmentId": "5",
+          "action": "select",
+          "price": "4",
+          "reason": "within budget, cheapest available"
+        },
+        {
+          "fragmentId": "10",
+          "action": "skip",
+          "reason": "exceeds budget"
+        },
+        {
+          "fragmentId": "11",
+          "action": "skip",
+          "reason": "exceeds budget"
+        },
+        {
+          "fragmentId": "6",
+          "action": "skip",
+          "reason": "exceeds budget"
+        },
+        {
+          "fragmentId": "12",
+          "action": "skip",
+          "reason": "exceeds budget"
+        }
+      ]
+    },
+    {
+      "step": "borrow",
+      "timestamp": "2026-03-22T13:52:01.727Z",
+      "borrows": [
+        {
+          "fragmentId": "4",
+          "hashVerified": true,
+          "txHash": "dry-run"
+        },
+        {
+          "fragmentId": "5",
+          "hashVerified": true,
+          "txHash": "dry-run"
+        }
+      ]
+    },
+    {
+      "step": "generate",
+      "timestamp": "2026-03-22T13:52:53.339Z",
+      "baselineLength": 3909,
+      "augmentedLength": 5121,
+      "fragmentsUsed": 2
+    },
+    {
+      "step": "judge",
+      "timestamp": "2026-03-22T13:52:55.995Z",
+      "baselineAvg": 6.666666666666667,
+      "augmentedAvg": 8.666666666666666,
+      "delta": 1.9999999999999991,
+      "explanation": "Response 1 demonstrates deeper technical understanding with specific molecular mechanisms, precise compounds, and evidence-based performance projections, while Response 2 provides more generic solutions without detailed implementation specifics."
+    },
+    {
+      "step": "feedback",
+      "timestamp": "2026-03-22T13:52:55.995Z",
+      "skipped": true,
+      "reason": "dry run"
+    },
+    {
+      "step": "output",
+      "timestamp": "2026-03-22T13:52:55.995Z",
+      "selectedResponse": "augmented",
+      "reason": "delta +2.0"
+    }
+  ],
+  "result": {
+    "responseUsed": "augmented",
+    "delta": 1.9999999999999991,
+    "fragmentsBorrowed": 2,
+    "feedbackSubmitted": false
+  }
+}

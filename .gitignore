@@ -12,6 +12,6 @@ contracts/broadcast/
 # Runtime artifacts
 borrows/
 EDGEDECAY/
-agent-runs/*.json
+# agent-runs/*.json  # keeping run logs for submission
 # Hash-suffixed copies created by publish-fragment.ts (content-addressed serving names)
 fragments/*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].md
