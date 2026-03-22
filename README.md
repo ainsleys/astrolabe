@@ -57,7 +57,7 @@ Evaluate + reputation  The borrower runs an A/B eval: task response
 
 ## Quick demo
 
-Requires: Node 20+, `.env` configured (see below). The demo borrows a fragment, runs one eval task (~$0.10 API cost), and prints Basescan links.
+Requires: Node 20+, [Foundry](https://book.getfoundry.sh/getting-started/installation) (`curl -L https://foundry.paradigm.xyz | bash && foundryup`), `.env` configured (see below). The demo borrows a fragment, runs one eval task (~$0.10 API cost), and prints Basescan links.
 
 ```bash
 npm install
@@ -118,7 +118,7 @@ The service-verification regression reproduces on Llama (-2.0), suggesting the f
 
 ```bash
 git clone --recurse-submodules https://github.com/ainsleys/astrolabe.git
-cd synthesis
+cd astrolabe
 npm install
 ```
 

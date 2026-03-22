@@ -168,7 +168,7 @@ Clone with submodules:
 
 ```bash
 git clone --recurse-submodules https://github.com/ainsleys/astrolabe.git
-cd synthesis
+cd astrolabe
 npm install
 ```
 
