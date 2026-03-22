@@ -1,0 +1,690 @@
+{
+  "runs": 5,
+  "tasks": {
+    "tilapia-disease-surveillance": {
+      "deltas": [
+        2.999999999999999,
+        2.666666666666667,
+        2.333333333333333,
+        2.666666666666667,
+        4.000000000000001
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 5,
+            "actionability": 5
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 2.999999999999999
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 2.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 2.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 2.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 4,
+            "actionability": 5
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "delta": 4.000000000000001
+        }
+      ]
+    },
+    "fcr-literature-review": {
+      "deltas": [
+        1.9999999999999991,
+        1.333333333333333,
+        2.666666666666666,
+        3.000000000000001,
+        1.9999999999999991
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 6,
+            "specificity": 7,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 1.9999999999999991
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 8,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 1.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 6,
+            "specificity": 7,
+            "actionability": 5
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 2.666666666666666
+        },
+        {
+          "baseScores": {
+            "accuracy": 6,
+            "specificity": 7,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "delta": 3.000000000000001
+        },
+        {
+          "baseScores": {
+            "accuracy": 6,
+            "specificity": 7,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 1.9999999999999991
+        }
+      ]
+    },
+    "carp-breeding-priorities": {
+      "deltas": [
+        -2,
+        3.000000000000001,
+        -2.666666666666667,
+        1.333333333333333,
+        3.666666666666666
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 8,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 4,
+            "actionability": 3
+          },
+          "delta": -2
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "delta": 3.000000000000001
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 8,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 8,
+            "specificity": 3,
+            "actionability": 4
+          },
+          "delta": -2.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 8,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 1.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 6,
+            "specificity": 4,
+            "actionability": 5
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 3.666666666666666
+        }
+      ]
+    },
+    "saas-launch-checklist": {
+      "deltas": [
+        0.33333333333333215,
+        1.666666666666667,
+        1.666666666666667,
+        2.333333333333333,
+        2.333333333333333
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 8,
+            "actionability": 9
+          },
+          "delta": 0.33333333333333215
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 7,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 1.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 7,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 1.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 2.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 2.333333333333333
+        }
+      ]
+    },
+    "whatsapp-bot-debugging": {
+      "deltas": [
+        2,
+        0,
+        1.666666666666667,
+        0.6666666666666661,
+        0.6666666666666661
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 8,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 2
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 7,
+            "actionability": 9
+          },
+          "delta": 0
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 8,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 1.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 8,
+            "actionability": 9
+          },
+          "delta": 0.6666666666666661
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 8,
+            "actionability": 9
+          },
+          "delta": 0.6666666666666661
+        }
+      ]
+    },
+    "service-integration-verification": {
+      "deltas": [
+        -2.666666666666667,
+        -2,
+        -1.666666666666666,
+        -2.666666666666666,
+        -2.333333333333334
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "augScores": {
+            "accuracy": 8,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "delta": -2.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "augScores": {
+            "accuracy": 8,
+            "specificity": 6,
+            "actionability": 7
+          },
+          "delta": -2
+        },
+        {
+          "baseScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 8,
+            "specificity": 7,
+            "actionability": 6
+          },
+          "delta": -1.666666666666666
+        },
+        {
+          "baseScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 10
+          },
+          "augScores": {
+            "accuracy": 8,
+            "specificity": 6,
+            "actionability": 7
+          },
+          "delta": -2.666666666666666
+        },
+        {
+          "baseScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "augScores": {
+            "accuracy": 8,
+            "specificity": 6,
+            "actionability": 7
+          },
+          "delta": -2.333333333333334
+        }
+      ]
+    },
+    "biofouling-prevention-strategy": {
+      "deltas": [
+        1.666666666666666,
+        2.333333333333333,
+        2.333333333333333,
+        1.666666666666666,
+        2.333333333333333
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 8,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 1.666666666666666
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 2.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 2.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 6,
+            "specificity": 8,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 1.666666666666666
+        },
+        {
+          "baseScores": {
+            "accuracy": 6,
+            "specificity": 7,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 2.333333333333333
+        }
+      ]
+    },
+    "hdpe-fermentation-vessel": {
+      "deltas": [
+        1.333333333333333,
+        1.333333333333333,
+        0.33333333333333215,
+        2.666666666666667,
+        1
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 8,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 1.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 7,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 1.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 8,
+            "actionability": 9
+          },
+          "delta": 0.33333333333333215
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 2.666666666666667
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 8,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 9
+          },
+          "delta": 1
+        }
+      ]
+    },
+    "pha-marine-degradation": {
+      "deltas": [
+        3.000000000000001,
+        2.333333333333333,
+        2.000000000000001,
+        -0.3333333333333339,
+        2.333333333333334
+      ],
+      "runs": [
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "delta": 3.000000000000001
+        },
+        {
+          "baseScores": {
+            "accuracy": 7,
+            "specificity": 6,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "delta": 2.333333333333333
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 7,
+            "actionability": 7
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "delta": 2.000000000000001
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 9,
+            "actionability": 8
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 8,
+            "actionability": 7
+          },
+          "delta": -0.3333333333333339
+        },
+        {
+          "baseScores": {
+            "accuracy": 8,
+            "specificity": 7,
+            "actionability": 6
+          },
+          "augScores": {
+            "accuracy": 9,
+            "specificity": 10,
+            "actionability": 9
+          },
+          "delta": 2.333333333333334
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-03-22T12:48:35.863Z"
+}
